@@ -1,5 +1,5 @@
 /** Debug option */
-const DRAW_FRAME_MARKERS = true;
+const DRAW_FRAME_MARKERS = false;
 
 /** Player physics details */
 const PLAYER_WIDTH = 14;
@@ -7,12 +7,8 @@ const PLAYER_HEIGHT = 18;
 const COLLISION_CROSS_INSET = 10;
 
 /** Player speed per millisecond */
-const SPEED = 300 / 1000;
-const GRAVITY = 4 / 1000;
+const SPEED = 450 / 1000;
 const JUMP_MAGNITUDE = 1;
-
-/** Physics utils */
-const COYOTE_DURATION = 100;
 
 const LEFT_KEY = 'a';
 const RIGHT_KEY = 'd';
@@ -71,14 +67,11 @@ class PlayerState {
 
         const xInput = (keyboardState[RIGHT_KEY] ? 1 : 0) - (keyboardState[LEFT_KEY] ? 1 : 0);
         const xVelocity = xInput * SPEED;
-        
-        this.jumpController.update(keyboardState, frameDuration);
 
-        const isJumping = this.jumpController.isJumping();
+        const { yAcceleration, isJumping } = this.jumpController.update(keyboardState, frameDuration, this.yVelocity);
 
-        if (!this.isGrounded) {
-            this.yVelocity += GRAVITY * frameDuration;
-        }
+        this.yVelocity += yAcceleration * frameDuration;
+
         if (isJumping) {
             this.yVelocity = -JUMP_MAGNITUDE;
         }
@@ -96,53 +89,5 @@ class PlayerState {
             ?? solids.find(solid => isPointInside(solid, this.x + this.width - 1, this.y + this.height));
 
         this.jumpController.groundedCheck(!!groundingSolid, isJumping);
-    }
-}
-
-class JumpController {
-    constructor() {
-        this.isGrounded = false;
-        this.coyoteTime = 0;
-        this.timeSinceJumpPress = COYOTE_DURATION * 2;
-        this.isJumpKeyDown = false;
-    }
-
-    isJumping() {
-        const isJumpDesired = this.isJumpKeyDown && this.timeSinceJumpPress < COYOTE_DURATION;
-
-        const isJumping = isJumpDesired && (this.isGrounded || this.coyoteTime > 0);
-
-        if (isJumping) {
-            this.timeSinceJumpPress = COYOTE_DURATION * 2;
-            this.coyoteTime = 0;
-        }
-
-        return isJumping;
-    }
-
-    update(keyboardState, frameDuration) {
-        this.coyoteTime -= frameDuration;
-
-        if (keyboardState[JUMP_KEY]) {
-            if (this.isJumpKeyDown) {
-                this.timeSinceJumpPress += frameDuration;
-            } else {
-                this.isJumpKeyDown = true;
-                this.timeSinceJumpPress = 0;
-            }
-        } else {
-            this.isJumpKeyDown = false;
-            this.timeSinceJumpPress = COYOTE_DURATION * 2;
-        }
-    }
-
-    groundedCheck(nowGrounded, nowJumping) {
-        if (this.isGrounded && !nowGrounded && !nowJumping) {
-            this.coyoteTime = COYOTE_DURATION;
-        } else if (nowGrounded) {
-            this.coyoteTime = 0;
-        }
-
-        this.isGrounded = nowGrounded;
     }
 }
