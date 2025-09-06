@@ -17,3 +17,7 @@ function overlaps(a, b) {
 function isPointInside(rect, x, y) {
     return rect.x <= x && x < rect.x + rect.width && rect.y <= y && y < rect.y + rect.height;
 }
+
+function square(x) {
+    return x * x;
+}

@@ -10,12 +10,33 @@ const COLLISION_CROSS_INSET = 10;
 const SPEED = 450 / 1000;
 const JUMP_MAGNITUDE = 1;
 
-const ATTACK_DURATION = 0.2;
+const ATTACK_DURATION = 200;
 
 const LEFT_KEY = 'a';
 const RIGHT_KEY = 'd';
 const JUMP_KEY = ' ';
 const ATTACK_KEY = 'j';
+
+const PLAYER_SPRITE = new Image();
+PLAYER_SPRITE.src = './img/sword_man.png';
+
+const SWORD_SWOOSH = new Image();
+SWORD_SWOOSH.src = './img/sword_slash.png';
+
+const getImageCoordinates = (attacking, facing, hasShield) => {
+    let x = 0, y = 0;
+    if (facing === 'right') {
+        x += PLAYER_WIDTH * 2;
+    }
+    if (attacking) {
+        y += PLAYER_HEIGHT * 2;
+    }
+    if (hasShield) {
+        x += PLAYER_WIDTH * 4;
+    }
+
+    return { x, y };
+};
 
 class PlayerState {
     constructor(x, y) {
@@ -23,8 +44,8 @@ class PlayerState {
 
         this.x = x;
         this.y = y;
-        this.height = PLAYER_HEIGHT;
-        this.width = PLAYER_WIDTH;
+        this.height = PLAYER_HEIGHT * 2;
+        this.width = PLAYER_WIDTH * 2;
 
         this.actor = new Actor(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2);
 
@@ -32,7 +53,7 @@ class PlayerState {
         this.yVelocity = 0;
 
         this.facing = 'left';
-        
+
         this.timeSinceAttack = 0;
 
         this.jumpController = new JumpController();
@@ -50,13 +71,27 @@ class PlayerState {
         const xInterp = lerp(this.lastState.x, this.x, interpolationFactor);
         const yInterp = lerp(this.lastState.y, this.y, interpolationFactor);
 
-        if (this.timeSinceAttack < 0) {
-            ctx.fillStyle = 'grey';
-            ctx.fillRect(xInterp - this.width + (this.facing === 'left' ? -1 : 1) * this.width, yInterp - COLLISION_CROSS_INSET, this.width * 2, COLLISION_CROSS_INSET * 2);
+        const isAttacking = this.timeSinceAttack < 0;
+        const attackTransparency = isAttacking ? 1 - square(1 - this.timeSinceAttack / -ATTACK_DURATION) : 0;
+
+        const attackSrcX = this.facing === 'left' ? 0 : PLAYER_WIDTH * 4;
+        const attackDestX = xInterp - this.width * 3 + (isAttacking && this.facing === 'right' ? this.width * 2 : 0);
+        const attackDestY = yInterp - this.height;
+
+        if (isAttacking) {
+            ctx.globalAlpha = attackTransparency;
+            ctx.drawImage(SWORD_SWOOSH, attackSrcX, 0, PLAYER_WIDTH * 4, PLAYER_HEIGHT * 1, attackDestX, attackDestY, this.width * 4, this.height * 1);
+            ctx.globalAlpha = 1;
         }
-        
-        ctx.fillStyle = 'white';
-        ctx.fillRect(xInterp - this.width, yInterp - this.height, this.width * 2, this.height * 2);
+
+        const { x: sx, y: sy } = getImageCoordinates(isAttacking, this.facing, true);
+        ctx.drawImage(PLAYER_SPRITE, sx, sy, PLAYER_WIDTH * 2, PLAYER_HEIGHT * 2, xInterp - this.width, yInterp - this.height, this.width * 2, this.height * 2);
+
+        if (isAttacking) {
+            ctx.globalAlpha = attackTransparency;
+            ctx.drawImage(SWORD_SWOOSH, attackSrcX, PLAYER_HEIGHT * 1, PLAYER_WIDTH * 4, PLAYER_HEIGHT * 1, attackDestX, attackDestY + this.height, this.width * 4, this.height * 1);
+            ctx.globalAlpha = 1;
+        }
 
         if (DRAW_FRAME_MARKERS) {
             ctx.strokeStyle = 'yellow';

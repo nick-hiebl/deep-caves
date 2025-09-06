@@ -2,6 +2,7 @@ function main() {
     /** Page setup */
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
 
     /** Game init */
     const caves = new CaveWorld();
