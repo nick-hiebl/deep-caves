@@ -10,9 +10,12 @@ const COLLISION_CROSS_INSET = 10;
 const SPEED = 450 / 1000;
 const JUMP_MAGNITUDE = 1;
 
+const ATTACK_DURATION = 0.2;
+
 const LEFT_KEY = 'a';
 const RIGHT_KEY = 'd';
 const JUMP_KEY = ' ';
+const ATTACK_KEY = 'j';
 
 class PlayerState {
     constructor(x, y) {
@@ -27,6 +30,10 @@ class PlayerState {
 
         this.xVelocity = 0;
         this.yVelocity = 0;
+
+        this.facing = 'left';
+        
+        this.timeSinceAttack = 0;
 
         this.jumpController = new JumpController();
     }
@@ -43,6 +50,11 @@ class PlayerState {
         const xInterp = lerp(this.lastState.x, this.x, interpolationFactor);
         const yInterp = lerp(this.lastState.y, this.y, interpolationFactor);
 
+        if (this.timeSinceAttack < 0) {
+            ctx.fillStyle = 'grey';
+            ctx.fillRect(xInterp - this.width + (this.facing === 'left' ? -1 : 1) * this.width, yInterp - COLLISION_CROSS_INSET, this.width * 2, COLLISION_CROSS_INSET * 2);
+        }
+        
         ctx.fillStyle = 'white';
         ctx.fillRect(xInterp - this.width, yInterp - this.height, this.width * 2, this.height * 2);
 
@@ -65,6 +77,12 @@ class PlayerState {
     update(mousePosition, keyboardState, frameDuration, solids) {
         this.lastState = { x: this.x, y: this.y };
 
+        this.timeSinceAttack += frameDuration;
+
+        if (keyboardState[ATTACK_KEY]) {
+            this.timeSinceAttack = -ATTACK_DURATION;
+        }
+
         const xInput = (keyboardState[RIGHT_KEY] ? 1 : 0) - (keyboardState[LEFT_KEY] ? 1 : 0);
         const xVelocity = xInput * SPEED;
 
@@ -77,6 +95,12 @@ class PlayerState {
         }
 
         this.xVelocity = xVelocity;
+
+        if (xVelocity > 0) {
+            this.facing = 'right';
+        } else if (xVelocity < 0) {
+            this.facing = 'left';
+        }
 
         this.actor.moveX(this.xVelocity * frameDuration, () => { this.xVelocity = 0 }, solids);
         this.actor.moveY(this.yVelocity * frameDuration, () => { this.yVelocity = 0 }, solids);
