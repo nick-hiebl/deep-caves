@@ -79,6 +79,6 @@ class Room {
             enemy.update(frameDuration, this.solids, this.playerState);
         });
 
-        this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids);
+        this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids, this.enemies);
     }
 }

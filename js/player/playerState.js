@@ -93,7 +93,7 @@ class PlayerState {
         }
     }
 
-    update(_mousePosition, keyboardState, frameDuration, solids) {
+    update(_mousePosition, keyboardState, frameDuration, solids, enemies) {
         this.lastState = { x: this.x, y: this.y };
 
         this.attackController.update(frameDuration, keyboardState[ATTACK_KEY], () => {
@@ -103,6 +103,12 @@ class PlayerState {
         if (!this.attackController.isActive) {
             this.attacks = [];
         }
+
+        this.attacks.forEach(attack => {
+            enemies.forEach(enemy => {
+                attack.interactWithEnemy(this.lastState, enemy);
+            })
+        });
 
         const xInput = (keyboardState[RIGHT_KEY] ? 1 : 0) - (keyboardState[LEFT_KEY] ? 1 : 0);
         const xVelocity = xInput * SPEED;

@@ -5,6 +5,8 @@ const ATTACK_HEIGHT = 36;
 const ATTACK_WIDTH = 56;
 const ATTACK_SCALE = 2;
 
+const KNOCKBACK_AMOUNT = 0.7;
+
 class Attack {
     constructor(facing) {
         this.facing = facing;
@@ -15,6 +17,8 @@ class Attack {
             x: facing === 'left' ? -ATTACK_WIDTH * ATTACK_SCALE * 3 / 4 : -ATTACK_WIDTH * ATTACK_SCALE * 1 / 4,
             y: -ATTACK_HEIGHT * ATTACK_SCALE / 2,
         };
+
+        this.interactedWith = new Set();
     }
 
     prePlayerDraw(ctx, relativePosition, attackTransparency) {
@@ -64,6 +68,27 @@ class Attack {
             ctx.strokeStyle = 'pink';
 
             ctx.strokeRect(relativePosition.x + this.box.x, relativePosition.y + this.box.y, this.box.width, this.box.height);
+        }
+    }
+
+    getBox(base) {
+        return {
+            x: base.x + this.box.x,
+            y: base.y + this.box.y,
+            width: this.box.width,
+            height: this.box.height,
+        };
+    }
+
+    interactWithEnemy(basePosition, enemy) {
+        if (this.interactedWith.has(enemy)) {
+            return;
+        }
+        const box = this.getBox(basePosition);
+
+        if (overlaps(box, enemy.actor)) {
+            enemy.xVelocity += this.facing === 'left' ? -KNOCKBACK_AMOUNT : KNOCKBACK_AMOUNT;
+            this.interactedWith.add(enemy);
         }
     }
 }

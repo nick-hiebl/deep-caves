@@ -2,7 +2,7 @@ const ENEMY_RADIUS = 24;
 
 const X_SPEED = 300 / 1000;
 const X_ACCEL = 1 / 1000;
-const Y_ACCEL = 3 / 1000;
+const Y_ACCEL = 2 / 1000;
 
 class Enemy {
     constructor(x, y) {
