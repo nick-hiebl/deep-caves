@@ -11,7 +11,7 @@ const SPEED = 450 / 1000;
 const JUMP_MAGNITUDE = 1;
 
 /** Attack parameters */
-const ATTACK_DURATION = 150;
+const ATTACK_DURATION = 100;
 const ATTACK_COOLDOWN = 250;
 const ATTACK_BUFFER = 300;
 
@@ -22,9 +22,6 @@ const ATTACK_KEY = 'j';
 
 const PLAYER_SPRITE = new Image();
 PLAYER_SPRITE.src = './img/sword_man.png';
-
-const SWORD_SWOOSH = new Image();
-SWORD_SWOOSH.src = './img/sword_slash.png';
 
 const getImageCoordinates = (attacking, facing, hasShield) => {
     let x = 0, y = 0;
@@ -59,6 +56,8 @@ class PlayerState {
 
         this.jumpController = new JumpController();
         this.attackController = new BufferedThrottledInputController(ATTACK_BUFFER, ATTACK_COOLDOWN, ATTACK_DURATION);
+
+        this.attacks = [];
     }
 
     draw(ctx, _canvas, mousePosition, interpolationFactor) {
@@ -76,45 +75,34 @@ class PlayerState {
         const isAttacking = this.attackController.isActive;
         const attackTransparency = 1 - square(this.attackController.fractionThroughCooldown() ?? 0);
 
-        const attackSrcX = this.facing === 'left' ? 0 : PLAYER_WIDTH * 4;
-        const attackDestX = xInterp - this.width * 3 + (isAttacking && this.facing === 'right' ? this.width * 2 : 0);
-        const attackDestY = yInterp - this.height;
-
-        if (isAttacking) {
-            ctx.globalAlpha = attackTransparency;
-            ctx.drawImage(SWORD_SWOOSH, attackSrcX, 0, PLAYER_WIDTH * 4, PLAYER_HEIGHT * 1, attackDestX, attackDestY, this.width * 4, this.height * 1);
-            ctx.globalAlpha = 1;
-        }
+        this.attacks.forEach(attack => {
+            attack.prePlayerDraw(ctx, { x: xInterp, y: yInterp }, attackTransparency);
+        });
 
         const { x: sx, y: sy } = getImageCoordinates(isAttacking, this.facing, true);
         ctx.drawImage(PLAYER_SPRITE, sx, sy, PLAYER_WIDTH * 2, PLAYER_HEIGHT * 2, xInterp - this.width, yInterp - this.height, this.width * 2, this.height * 2);
 
-        if (isAttacking) {
-            ctx.globalAlpha = attackTransparency;
-            ctx.drawImage(SWORD_SWOOSH, attackSrcX, PLAYER_HEIGHT * 1, PLAYER_WIDTH * 4, PLAYER_HEIGHT * 1, attackDestX, attackDestY + this.height, this.width * 4, this.height * 1);
-            ctx.globalAlpha = 1;
-        }
+        this.attacks.forEach(attack => {
+            attack.postPlayerDraw(ctx, { x: xInterp, y: yInterp }, attackTransparency);
+        });
 
         if (DRAW_FRAME_MARKERS) {
             ctx.strokeStyle = 'yellow';
 
             ctx.strokeRect(this.actor.x, this.actor.y, this.actor.width, this.actor.height);
-
-            if (this.jumpController.isGrounded) {
-                ctx.fillStyle = 'pink';
-                ctx.fillRect(this.x - COLLISION_CROSS_INSET, this.y - COLLISION_CROSS_INSET, 2 * COLLISION_CROSS_INSET, 2 * COLLISION_CROSS_INSET);
-            }
-            if (this.jumpController.coyoteTime > 0) {
-                ctx.fillStyle = 'green';
-                ctx.fillRect(this.x - COLLISION_CROSS_INSET, this.y - COLLISION_CROSS_INSET, COLLISION_CROSS_INSET, COLLISION_CROSS_INSET);
-            }
         }
     }
 
     update(mousePosition, keyboardState, frameDuration, solids) {
         this.lastState = { x: this.x, y: this.y };
 
-        this.attackController.update(frameDuration, keyboardState[ATTACK_KEY], () => { });
+        this.attackController.update(frameDuration, keyboardState[ATTACK_KEY], () => {
+            this.attacks = [new Attack(this.facing)];
+        });
+
+        if (!this.attackController.isActive) {
+            this.attacks = [];
+        }
 
         const xInput = (keyboardState[RIGHT_KEY] ? 1 : 0) - (keyboardState[LEFT_KEY] ? 1 : 0);
         const xVelocity = xInput * SPEED;
