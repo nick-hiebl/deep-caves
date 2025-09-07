@@ -141,10 +141,9 @@ class PlayerState {
         this.x = this.actor.x + this.width;
         this.y = this.actor.y + this.height;
 
-        const groundingSolid = solids.find(solid => isPointInside(solid, this.x - this.width, this.y + this.height))
-            ?? solids.find(solid => isPointInside(solid, this.x, this.y + this.height))
-            /** Subtract one from x so we can't wall jump */
-            ?? solids.find(solid => isPointInside(solid, this.x + this.width - 1, this.y + this.height));
+        const groundingCollider = { x: this.x - this.width, y: this.y + this.height, width: this.width * 2, height: 1 };
+
+        const groundingSolid = solids.find(solid => overlaps(solid, groundingCollider));
 
         this.jumpController.groundedCheck(!!groundingSolid, isJumping);
     }
