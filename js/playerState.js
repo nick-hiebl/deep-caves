@@ -10,7 +10,10 @@ const COLLISION_CROSS_INSET = 10;
 const SPEED = 450 / 1000;
 const JUMP_MAGNITUDE = 1;
 
-const ATTACK_DURATION = 200;
+/** Attack parameters */
+const ATTACK_DURATION = 150;
+const ATTACK_COOLDOWN = 250;
+const ATTACK_BUFFER = 300;
 
 const LEFT_KEY = 'a';
 const RIGHT_KEY = 'd';
@@ -54,9 +57,8 @@ class PlayerState {
 
         this.facing = 'left';
 
-        this.timeSinceAttack = 0;
-
         this.jumpController = new JumpController();
+        this.attackController = new BufferedThrottledInputController(ATTACK_BUFFER, ATTACK_COOLDOWN, ATTACK_DURATION);
     }
 
     draw(ctx, _canvas, mousePosition, interpolationFactor) {
@@ -71,8 +73,8 @@ class PlayerState {
         const xInterp = lerp(this.lastState.x, this.x, interpolationFactor);
         const yInterp = lerp(this.lastState.y, this.y, interpolationFactor);
 
-        const isAttacking = this.timeSinceAttack < 0;
-        const attackTransparency = isAttacking ? 1 - square(1 - this.timeSinceAttack / -ATTACK_DURATION) : 0;
+        const isAttacking = this.attackController.isActive;
+        const attackTransparency = 1 - square(this.attackController.fractionThroughCooldown() ?? 0);
 
         const attackSrcX = this.facing === 'left' ? 0 : PLAYER_WIDTH * 4;
         const attackDestX = xInterp - this.width * 3 + (isAttacking && this.facing === 'right' ? this.width * 2 : 0);
@@ -112,11 +114,7 @@ class PlayerState {
     update(mousePosition, keyboardState, frameDuration, solids) {
         this.lastState = { x: this.x, y: this.y };
 
-        this.timeSinceAttack += frameDuration;
-
-        if (keyboardState[ATTACK_KEY]) {
-            this.timeSinceAttack = -ATTACK_DURATION;
-        }
+        this.attackController.update(frameDuration, keyboardState[ATTACK_KEY], () => { });
 
         const xInput = (keyboardState[RIGHT_KEY] ? 1 : 0) - (keyboardState[LEFT_KEY] ? 1 : 0);
         const xVelocity = xInput * SPEED;
@@ -144,6 +142,7 @@ class PlayerState {
         this.y = this.actor.y + this.height;
 
         const groundingSolid = solids.find(solid => isPointInside(solid, this.x - this.width, this.y + this.height))
+            ?? solids.find(solid => isPointInside(solid, this.x, this.y + this.height))
             /** Subtract one from x so we can't wall jump */
             ?? solids.find(solid => isPointInside(solid, this.x + this.width - 1, this.y + this.height));
 
