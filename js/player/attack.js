@@ -89,6 +89,7 @@ class Attack {
         if (overlaps(box, enemy.actor)) {
             enemy.xVelocity += this.facing === 'left' ? -KNOCKBACK_AMOUNT : KNOCKBACK_AMOUNT;
             this.interactedWith.add(enemy);
+            enemy.applyDamage();
         }
     }
 }

@@ -15,6 +15,9 @@ class Enemy {
         this.radius = ENEMY_RADIUS;
 
         this.actor = new Actor(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+
+        this.hp = 3;
+        this.alive = true;
     }
 
     draw(ctx) {
@@ -42,5 +45,12 @@ class Enemy {
 
         this.x = this.actor.x + this.radius / 2;
         this.y = this.actor.y + this.radius / 2;
+    }
+
+    applyDamage() {
+        this.hp -= 1;
+        if (this.hp <= 0) {
+            this.alive = false;
+        }
     }
 }

@@ -80,5 +80,7 @@ class Room {
         });
 
         this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids, this.enemies);
+
+        this.enemies = this.enemies.filter(enemy => enemy.alive);
     }
 }
