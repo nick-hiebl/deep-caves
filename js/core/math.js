@@ -21,3 +21,13 @@ function isPointInside(rect, x, y) {
 function square(x) {
     return x * x;
 }
+
+function approach(target, current, step) {
+    if (target > current) {
+        return Math.min(target, current + step);
+    } else if (target < current) {
+        return Math.max(target, current - step);
+    } else {
+        return target;
+    }
+}

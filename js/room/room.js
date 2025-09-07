@@ -44,6 +44,10 @@ class Room {
 
         /** Player setup */
         this.playerState = new PlayerState(0.4 * ROOM_SCALE_WIDTH, 0.4 * ROOM_SCALE_HEIGHT);
+
+        this.enemies = [
+            new Enemy(width, height),
+        ];
     }
 
     draw(ctx, canvas, mousePosition, interpolationFactor) {
@@ -58,13 +62,23 @@ class Room {
             ctx.fillRect(solid.x, solid.y, solid.width, solid.height);
         }
 
+        /** Draw enemies */
+        this.enemies.forEach(enemy => {
+            enemy.draw(ctx);
+        });
+
         /** Draw player */
         ctx.fillStyle = 'white';
-        this.playerState.draw(ctx, canvas, mousePosition, interpolationFactor)
+        this.playerState.draw(ctx, canvas, mousePosition, interpolationFactor);
     }
 
     update(mousePosition, keyboardState, frameDuration) {
         this.interactive.update(frameDuration, [this.playerState.actor], this.solids);
+
+        this.enemies.forEach(enemy => {
+            enemy.update(frameDuration, this.solids, this.playerState);
+        });
+
         this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids);
     }
 }

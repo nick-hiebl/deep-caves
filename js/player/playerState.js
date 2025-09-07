@@ -93,7 +93,7 @@ class PlayerState {
         }
     }
 
-    update(mousePosition, keyboardState, frameDuration, solids) {
+    update(_mousePosition, keyboardState, frameDuration, solids) {
         this.lastState = { x: this.x, y: this.y };
 
         this.attackController.update(frameDuration, keyboardState[ATTACK_KEY], () => {
