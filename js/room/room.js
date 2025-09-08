@@ -76,7 +76,7 @@ class Room {
         this.interactive.update(frameDuration, [this.playerState.actor], this.solids);
 
         this.enemies.forEach(enemy => {
-            enemy.update(frameDuration, this.solids, this.playerState);
+            enemy.update(frameDuration, this.solids, this.playerState.actor.getMidpoint());
         });
 
         this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids, this.enemies);

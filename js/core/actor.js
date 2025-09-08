@@ -83,4 +83,11 @@ class Actor {
     squish() {
         console.log('Squish');
     }
+
+    getMidpoint() {
+        return {
+            x: this.x + this.width / 2,
+            y: this.y + this.height / 2,
+        };
+    }
 }

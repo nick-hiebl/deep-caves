@@ -124,13 +124,13 @@ class PlayerState {
 
         this.xVelocity = xVelocity;
 
-        if (xVelocity > 0) {
+        if (xInput > 0) {
             this.facing = 'right';
-        } else if (xVelocity < 0) {
+        } else if (xInput < 0) {
             this.facing = 'left';
         }
 
-        this.actor.moveX(this.xVelocity * frameDuration, () => { this.xVelocity = 0 }, solids);
+        this.actor.moveX(this.xVelocity * frameDuration, () => { }, solids);
         this.actor.moveY(this.yVelocity * frameDuration, () => { this.yVelocity = 0 }, solids);
 
         this.x = this.actor.x + this.width;
