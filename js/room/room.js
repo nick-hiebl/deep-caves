@@ -46,7 +46,7 @@ class Room {
         this.playerState = new PlayerState(0.4 * ROOM_SCALE_WIDTH, 0.4 * ROOM_SCALE_HEIGHT);
 
         this.enemies = [
-            new Enemy(width, height),
+            new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
         ];
     }
 

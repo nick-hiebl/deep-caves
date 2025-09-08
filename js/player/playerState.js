@@ -8,6 +8,7 @@ const COLLISION_CROSS_INSET = 10;
 
 /** Player speed per millisecond */
 const SPEED = 450 / 1000;
+const PLAYER_X_ACCEL = 8 / 1000;
 const JUMP_MAGNITUDE = 1;
 
 /** Attack parameters */
@@ -111,7 +112,7 @@ class PlayerState {
         });
 
         const xInput = (keyboardState[RIGHT_KEY] ? 1 : 0) - (keyboardState[LEFT_KEY] ? 1 : 0);
-        const xVelocity = xInput * SPEED;
+        const xVelocity = approach(xInput * SPEED, this.xVelocity, PLAYER_X_ACCEL);
 
         const { yAcceleration, isJumping } = this.jumpController.update(keyboardState, frameDuration, this.yVelocity);
 
