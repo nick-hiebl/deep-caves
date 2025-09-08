@@ -1,11 +1,12 @@
 class Solid {
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, config = {}) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
 
         this.isCollidable = true;
+        this.isDroppable = config.isDroppable ?? false;
 
         this.xRemainder = 0;
         this.yRemainder = 0;

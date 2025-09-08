@@ -7,7 +7,7 @@ const GAP_SIZE = WALL_THICKNESS * 6;
 
 const EPSILON = 0.01;
 
-const createSolid = (args) => {
+const createSolid = (args, config) => {
     const x = args.x ?? args.left;
     const y = args.y ?? args.top;
     const width = args.width ?? args.right - x;
@@ -17,7 +17,7 @@ const createSolid = (args) => {
         throw new Error('Invalid parameters to create solid!');
     }
 
-    return new Solid(x, y, width, height);
+    return new Solid(x, y, width, height, config);
 }
 
 const generateRoom = () => {
@@ -43,7 +43,7 @@ const generateRoom = () => {
     solids.push(createSolid({ x: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS, top: gapBottom, bottom: ROOM_SCALE_HEIGHT }));
 
     for (let y = 0; y < ROOM_SCALE_HEIGHT; y += WALL_THICKNESS) {
-        for (let x = 0; x < ROOM_SCALE_WIDTH; x += WALL_THICKNESS) {
+        for (let x = ROOM_SCALE_WIDTH * 3 / 4; x < ROOM_SCALE_WIDTH; x += WALL_THICKNESS) {
             const isXWall = x === 0 || x + WALL_THICKNESS === ROOM_SCALE_WIDTH;
             const isYWall = y === 0 || y + WALL_THICKNESS === ROOM_SCALE_HEIGHT;
 
@@ -52,6 +52,25 @@ const generateRoom = () => {
             }
         }
     }
+
+    solids.push(createSolid(
+        { left: gapLeft - GAP_SIZE, width: GAP_SIZE, top: 420, height: WALL_THICKNESS / 4 },
+        { isDroppable: true },
+    ));
+    solids.push(createSolid(
+        { left: gapLeft - GAP_SIZE, width: GAP_SIZE, top: 570, height: WALL_THICKNESS / 4 },
+        { isDroppable: true },
+    ));
+
+    solids.push(createSolid(
+        { left: gapLeft, right: gapRight, top: 140, height: WALL_THICKNESS / 4 },
+        { isDroppable: true },
+    ));
+
+    solids.push(createSolid(
+        { left: gapLeft, right: gapRight, top: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS / 4 },
+        { isDroppable: true },
+    ));
 
     return solids;
 };
@@ -68,7 +87,7 @@ class Room {
 
         /** Inner room setup */
         this.solids = generateRoom();
-        this.interactive = new MovingPlatform(0, 320, 200, 40);
+        this.interactive = new MovingPlatform(0, 280, 200, 40);
         this.solids.push(this.interactive.solid);
 
         /** Player setup */
@@ -112,6 +131,10 @@ class Room {
 
         this.enemies = this.enemies.filter(enemy => enemy.alive);
 
+        this.validateLeavingRoom(onRoomChange);
+    }
+
+    validateLeavingRoom(onRoomChange) {
         const playerMidpoint = this.playerState.actor.getMidpoint();
         if (playerMidpoint.x > ROOM_SCALE_WIDTH) {
             onRoomChange(this.x + 1, this.y);

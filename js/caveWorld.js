@@ -104,7 +104,10 @@ class CaveWorld {
         /** If falling room to room cap their new y to 1px down */
         if (newRoom.y >= lastRoom.y + lastRoom.height) {
             newRoom.playerState.actor.y = Math.min(newRoom.playerState.actor.y, 1);
+        } else if (newRoom.y + newRoom.height <= lastRoom.y) {
+            newRoom.playerState.yVelocity = Math.min(-1.1, newRoom.playerState.yVelocity);
         }
+
         newRoom.playerState.facing = lastRoom.playerState.facing;
     }
 

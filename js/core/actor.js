@@ -9,6 +9,15 @@ class Actor {
 
         this.xRemainder = 0;
         this.yRemainder = 0;
+
+        this.isDropping = false;
+        this.droppingSet = new Set();
+    }
+
+    setDropping(isDropping) {
+        this.isDropping = isDropping;
+
+        this.droppingSet = new Set(Array.from(this.droppingSet).filter(solid => overlaps(this, solid)));
     }
 
     moveX(amount, onCollide, solids) {
@@ -24,7 +33,14 @@ class Actor {
                 move -= sign;
 
                 /** Backtrack one step on collision and return */
-                if (this.collideAt(solids)) {
+                const { isColliding, droppingThroughSolids } = this.collideAt(solids);
+
+                /** If entering a droppable solid horizontally, you fall through it */
+                droppingThroughSolids.forEach(solid => {
+                    this.droppingSet.add(solid);
+                });
+
+                if (isColliding) {
                     this.x -= sign;
                     onCollide();
                     break;
@@ -41,28 +57,23 @@ class Actor {
             this.yRemainder -= move;
             const sign = move > 0 ? 1 : -1;
 
-            /** Move in STEP_SIZE chunks */
-            while (Math.abs(move) > STEP_SIZE) {
-                this.y += sign * STEP_SIZE;
-                move -= sign * STEP_SIZE;
-
-                /** Upon collision, backtrack until no longer colliding */
-                if (this.collideAt(solids)) {
-                    while (this.collideAt(solids)) {
-                        this.y -= sign;
-                    }
-                    onCollide();
-                    return;
-                }
-            }
-
             /** Process leftovers if any */
             while (move !== 0) {
                 this.y += sign;
                 move -= sign;
 
                 /** Backtrack one step on collision and return */
-                if (this.collideAt(solids)) {
+                let { isColliding, droppingThroughSolids } = this.collideAt(solids);
+
+                /** If moving up or dropping then just mark solids we are dropping through */
+                if ((sign < 0 || this.isDropping) && droppingThroughSolids.length > 0) {
+                    droppingThroughSolids.forEach(solid => this.droppingSet.add(solid));
+                } else if (droppingThroughSolids.length > 0) {
+                    /** We are falling and not dropping through platforms */
+                    isColliding = true;
+                }
+
+                if (isColliding) {
                     this.y -= sign;
                     onCollide();
                     break;
@@ -71,15 +82,58 @@ class Actor {
         }
     }
 
+    isGrounded(solids) {
+        const groundingCollider = { x: this.x, y: this.y + this.height, width: this.width, height: 1 };
+
+        const groundingSolid = solids.find(solid => {
+            if (this.droppingSet.has(solid)) {
+                return false;
+            }
+
+            if (this.isDropping && solid.isDroppable) {
+                return false;
+            }
+
+            return overlaps(groundingCollider, solid);
+        });
+
+        return !!groundingSolid;
+    }
+
     collideAt(solids) {
-        return solids.some(solid => solid.isCollidable && overlaps(this, solid));
+        const droppingThroughSolids = [];
+
+        const isColliding = solids.some(solid => {
+            if (!solid.isCollidable) {
+                return false;
+            }
+
+            const overlapping = overlaps(this, solid);
+
+            if (!overlapping) {
+                return false;
+            }
+
+            if (solid.isDroppable) {
+                if (!this.droppingSet.has(solid)) {
+                    droppingThroughSolids.push(solid);
+                } else {
+                    // return true;
+                }
+                return false;
+            }
+
+            return true;
+        });
+
+        return { isColliding, droppingThroughSolids };
     }
 
     isRiding(solid) {
         return isPointInside(solid, this.x, this.y + this.height)
             || isPointInside(solid, this.x + this.width - 1, this.y + this.height);
     }
-    
+
     squish() {
         console.log('Squish');
     }

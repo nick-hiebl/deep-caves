@@ -17,6 +17,7 @@ const ATTACK_COOLDOWN = 250;
 const ATTACK_BUFFER = 300;
 
 const LEFT_KEY = 'a';
+const DOWN_KEY = 's';
 const RIGHT_KEY = 'd';
 const JUMP_KEY = ' ';
 const ATTACK_KEY = 'j';
@@ -130,16 +131,16 @@ class PlayerState {
             this.facing = 'left';
         }
 
+        this.actor.setDropping(keyboardState[DOWN_KEY]);
+
         this.actor.moveX(this.xVelocity * frameDuration, () => { }, solids);
         this.actor.moveY(this.yVelocity * frameDuration, () => { this.yVelocity = 0 }, solids);
 
         this.x = this.actor.x + this.width;
         this.y = this.actor.y + this.height;
 
-        const groundingCollider = { x: this.x - this.width, y: this.y + this.height, width: this.width * 2, height: 1 };
+        const isGrounded = this.actor.isGrounded(solids);
 
-        const groundingSolid = solids.find(solid => overlaps(solid, groundingCollider));
-
-        this.jumpController.groundedCheck(!!groundingSolid, isJumping);
+        this.jumpController.groundedCheck(isGrounded, isJumping);
     }
 }

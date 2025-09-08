@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deep Caves</title>
     <style>
-        body {
+        .canvas-container {
             margin-inline: 0;
             display: flex;
             justify-content: center;
+            margin-bottom: 24px;
         }
         canvas {
             border: 1px solid black;
@@ -18,7 +19,12 @@
 </head>
 
 <body>
-    <canvas width="1280" height="720" id="canvas"></canvas>
+    <div class="canvas-container">
+        <canvas width="1280" height="720" id="canvas"></canvas>
+    </div>
+    <div>A, D to move left and right.</div>
+    <div>Space to jump, S to drop through platforms.</div>
+    <div>J to swing sword.</div>
 
     <script src="./js/core/math.js"></script>
     <script src="./js/core/actor.js"></script>
