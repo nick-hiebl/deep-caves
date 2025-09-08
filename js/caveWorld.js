@@ -1,5 +1,10 @@
 const FRAME_DURATION = 2;
 
+const MAP_KEY = 'Tab';
+
+const MAP_INSET = 64;
+const MAP_BORDER = 4;
+
 const generateChoices = () => {
     return [
         new RoomChoice(),
@@ -30,6 +35,8 @@ class CaveWorld {
         this.choosing = true;
         this.choices = [];
 
+        this.tabLatch = latch(false);
+
         this.mouseOverChoiceIndex = -1;
 
         this.firstTickInNewRoom = false;
@@ -37,14 +44,44 @@ class CaveWorld {
 
     /** Update loop */
     update(ctx, canvas, mousePosition, keyboardState) {
+        this.tabLatch(
+            keyboardState[MAP_KEY],
+            {
+                onLock: () => {
+                    if (this.pausedFor === 'Tab') {
+                        this.lastFrameTime = performance.now();
+                        this.pausedFor = undefined;
+                    } else {
+                        if (!this.pausedFor) {
+                            this.pausedFor = 'Tab';
+                        }
+                    }
+                },
+            },
+        );
+
         /** Choices setup */
         if (this.pausedFor === 'choices') {
             if (this.choices.length === 0) {
                 this.choices = generateChoices();
             }
 
-            this.draw(ctx, canvas, mousePosition);
+            this.draw(ctx, canvas, mousePosition, 0);
             this.drawOptions(ctx, canvas, mousePosition);
+            return;
+        } else if (this.pausedFor === 'Tab') {
+            this.draw(ctx, canvas, mousePosition, 0);
+
+            ctx.fillStyle = '#00000099';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'white';
+            ctx.fillRect(MAP_INSET - MAP_BORDER, MAP_INSET - MAP_BORDER, canvas.height - (MAP_INSET - MAP_BORDER) * 2, canvas.height - (MAP_INSET - MAP_BORDER) * 2);
+
+            ctx.fillStyle = 'black';
+            ctx.fillRect(MAP_INSET, MAP_INSET, canvas.height - MAP_INSET * 2, canvas.height - MAP_INSET * 2);
+
+            this.worldMap.drawMapToScreen(ctx, MAP_INSET, MAP_INSET, canvas.height - MAP_INSET * 2, canvas.height - MAP_INSET * 2);
             return;
         }
 
