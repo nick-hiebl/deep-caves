@@ -26,7 +26,7 @@ class CaveWorld {
         this.lastFrameTime = performance.now();
         this.unprocessedTime = 0;
 
-        this.paused = false;
+        this.pausedFor = undefined;
         this.choosing = true;
         this.choices = [];
 
@@ -38,7 +38,7 @@ class CaveWorld {
     /** Update loop */
     update(ctx, canvas, mousePosition, keyboardState) {
         /** Choices setup */
-        if (this.paused) {
+        if (this.pausedFor === 'choices') {
             if (this.choices.length === 0) {
                 this.choices = generateChoices();
             }
@@ -57,13 +57,13 @@ class CaveWorld {
 
         this.unprocessedTime += elapsedTime;
 
-        while (this.unprocessedTime >= FRAME_DURATION && !this.paused) {
+        while (this.unprocessedTime >= FRAME_DURATION && !this.pausedFor) {
             this.simulateFrame(mousePosition, keyboardState);
 
             this.unprocessedTime -= FRAME_DURATION;
         }
 
-        if (this.paused) {
+        if (this.pausedFor) {
             this.unprocessedTime = 0;
         }
 
@@ -73,7 +73,7 @@ class CaveWorld {
     }
 
     click(_canvas, _mousePosition) {
-        const choosing = this.paused && this.choices.length > 0;
+        const choosing = this.pausedFor === 'choices' && this.choices.length > 0;
         const mousingOverValidOption = this.mouseOverChoiceIndex >= 0 && this.mouseOverChoiceIndex < this.choices.length;
 
         if (choosing && mousingOverValidOption) {
@@ -86,7 +86,7 @@ class CaveWorld {
             this.unprocessedTime = 0;
             this.firstTickInNewRoom = true;
 
-            this.paused = false;
+            this.pausedFor = undefined;
             this.choices = [];
         }
     }
@@ -122,7 +122,7 @@ class CaveWorld {
 
             this.transferPlayerPosition(this.worldMap.getPreviousRoom(), this.worldMap.getCurrentRoom());
         } else {
-            this.paused = true;
+            this.pausedFor = 'choices';
             this.worldMap.enterRoom(x, y);
         }
     }
