@@ -31,6 +31,8 @@ class CaveWorld {
         this.choices = [];
 
         this.mouseOverChoiceIndex = -1;
+
+        this.firstTickInNewRoom = false;
     }
 
     /** Update loop */
@@ -48,8 +50,10 @@ class CaveWorld {
 
         /** Time computation */
         const currentTime = performance.now();
-        const elapsedTime = Math.min(currentTime - this.lastFrameTime, 250);
+        const elapsedTime = this.firstTickInNewRoom ? 0 : Math.min(currentTime - this.lastFrameTime, 250);
         this.lastFrameTime = currentTime;
+
+        this.firstTickInNewRoom = false;
 
         this.unprocessedTime += elapsedTime;
 
@@ -79,6 +83,9 @@ class CaveWorld {
             const lastRoom = this.worldMap.getPreviousRoom();
             this.transferPlayerPosition(lastRoom, newRoom);
 
+            this.unprocessedTime = 0;
+            this.firstTickInNewRoom = true;
+
             this.paused = false;
             this.choices = [];
         }
@@ -86,13 +93,19 @@ class CaveWorld {
 
     transferPlayerPosition(lastRoom, newRoom) {
         newRoom.playerState.xVelocity = lastRoom.playerState.xVelocity;
-        newRoom.playerState.xVelocity = lastRoom.playerState.xVelocity;
+        /** Cap player y velocity when falling room to room */
+        newRoom.playerState.yVelocity = Math.min(lastRoom.playerState.yVelocity, 0.1);
 
         const worldX = lastRoom.playerState.actor.x + lastRoom.x * ROOM_SCALE_WIDTH;
         const worldY = lastRoom.playerState.actor.y + lastRoom.y * ROOM_SCALE_HEIGHT;
 
         newRoom.playerState.actor.x = worldX - newRoom.x * ROOM_SCALE_WIDTH;
         newRoom.playerState.actor.y = worldY - newRoom.y * ROOM_SCALE_HEIGHT;
+        /** If falling room to room cap their new y to 1px down */
+        if (newRoom.y >= lastRoom.y + lastRoom.height) {
+            newRoom.playerState.actor.y = Math.min(newRoom.playerState.actor.y, 1);
+        }
+        newRoom.playerState.facing = lastRoom.playerState.facing;
     }
 
     simulateFrame(mousePosition, keyboardState) {
