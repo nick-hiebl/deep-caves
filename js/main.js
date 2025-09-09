@@ -35,7 +35,7 @@ function main() {
     let keyboardState = {};
     window.addEventListener('keydown', e => {
         keyboardState[e.key] = true;
-        if (e.key === 'Tab') {
+        if (e.key === 'Tab' || e.key === ' ') {
             e.preventDefault();
         }
     });
