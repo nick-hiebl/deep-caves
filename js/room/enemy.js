@@ -46,7 +46,14 @@ class Enemy {
         }
     }
 
-    update(frameDuration, _solids, playerPosition) {
+    update(frameDuration, solids, playerPosition) {
+        this.updateVelocities(frameDuration, solids, playerPosition);
+
+        this.actor.moveX(this.xVelocity * frameDuration, () => { }, []);
+        this.actor.moveY(this.yVelocity * frameDuration, () => { }, []);
+    }
+
+    updateVelocities(_frameDuration, _solids, playerPosition) {
         const myMidpoint = this.actor.getMidpoint();
 
         if (playerPosition) {
@@ -67,9 +74,6 @@ class Enemy {
         } else {
             this.facing = this.xVelocity < 0 ? 'left' : 'right';
         }
-
-        this.actor.moveX(this.xVelocity * frameDuration, () => { }, []);
-        this.actor.moveY(this.yVelocity * frameDuration, () => { }, []);
     }
 
     applyDamage() {
