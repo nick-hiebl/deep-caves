@@ -86,6 +86,7 @@ class Room {
 
         this.enemies = [
             new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
+            new Walker(ROOM_SCALE_WIDTH / 4 * 3, ROOM_SCALE_HEIGHT / 2),
         ];
     }
 

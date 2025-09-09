@@ -112,7 +112,7 @@ class PlayerState {
         this.attacks.forEach(attack => {
             enemies.forEach(enemy => {
                 attack.interactWithEnemy(this.lastState, enemy);
-            })
+            });
         });
 
         const xInput = (keyboardState[RIGHT_KEY] ? 1 : 0) - (keyboardState[LEFT_KEY] ? 1 : 0);

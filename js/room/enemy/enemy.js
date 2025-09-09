@@ -25,6 +25,8 @@ class Enemy {
         this.alive = true;
 
         this.facing = 'left';
+
+        this.isNonPhysical = true;
     }
 
     draw(ctx) {
@@ -49,8 +51,13 @@ class Enemy {
     update(frameDuration, solids, playerPosition) {
         this.updateVelocities(frameDuration, solids, playerPosition);
 
-        this.actor.moveX(this.xVelocity * frameDuration, () => { }, []);
-        this.actor.moveY(this.yVelocity * frameDuration, () => { }, []);
+        if (this.isNonPhysical) {
+            this.actor.moveX(this.xVelocity * frameDuration, () => { }, []);
+            this.actor.moveY(this.yVelocity * frameDuration, () => { }, []);
+        } else {
+            this.actor.moveX(this.xVelocity * frameDuration, () => { this.xVelocity = 0 }, solids);
+            this.actor.moveY(this.yVelocity * frameDuration, () => { this.yVelocity = 0 }, solids);
+        }
     }
 
     updateVelocities(_frameDuration, _solids, playerPosition) {
