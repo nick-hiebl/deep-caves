@@ -41,22 +41,21 @@ class WorldMap {
 
     getNeighboringDoors(x, y) {
         return {
-            right: this.map[this.index(x + 1, y)]?.doors?.left,
-            left: this.map[this.index(x - 1, y)]?.doors?.right,
-            top: this.map[this.index(x, y - 1)]?.doors?.bottom,
-            bottom: this.map[this.index(x, y + 1)]?.doors?.top,
+            right: { ...this.map[this.index(x + 1, y)]?.doors?.left },
+            left: { ...this.map[this.index(x - 1, y)]?.doors?.right },
+            top: { ...this.map[this.index(x, y - 1)]?.doors?.bottom },
+            bottom: { ...this.map[this.index(x, y + 1)]?.doors?.top },
         };
     }
 
     generateRoomChoices(x, y) {
         const makeColor = () => `hsl(${randint(0, 360)}, 60%, 60%)`;
 
-        const doors = this.getNeighboringDoors(x, y);
-
+        /** Must re-compute neighboring doors for each as otherwise each instance will be shared. */
         return [
-            new Room(x, y, 1, 1, makeColor(), { ...doors }),
-            new Room(x, y, 1, 1, makeColor(), { ...doors }),
-            new Room(x, y, 1, 1, makeColor(), { ...doors }),
+            new Room(x, y, 1, 1, makeColor(), this.getNeighboringDoors(x, y)),
+            new Room(x, y, 1, 1, makeColor(), this.getNeighboringDoors(x, y)),
+            new Room(x, y, 1, 1, makeColor(), this.getNeighboringDoors(x, y)),
         ];
     }
 

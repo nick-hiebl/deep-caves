@@ -11,6 +11,10 @@ const createSolid = (args, config) => {
     return new Solid(x, y, width, height, config);
 }
 
+const getGapNames = (gapMap) => {
+    return Object.keys(gapMap).filter(key => gapMap[key]);
+};
+
 const generateRoom = (x, y, doors) => {
     const solids = [];
 
@@ -21,19 +25,19 @@ const generateRoom = (x, y, doors) => {
     const gapBottom = gapTop + GAP_SIZE;
 
     /** Top */
-    const topStarts = [0].concat(doors.top.map(name => GAPS[name][1]));
-    const topEnds = doors.top.map(name => GAPS[name][0]).concat(ROOM_SCALE_WIDTH);
+    const topStarts = [0].concat(getGapNames(doors.top).map(name => GAPS[name][1]));
+    const topEnds = getGapNames(doors.top).map(name => GAPS[name][0]).concat(ROOM_SCALE_WIDTH);
     topStarts.forEach((left, index) => {
         solids.push(createSolid({ left, right: topEnds[index], y: 0, height: WALL_THICKNESS }));
     });
 
     /** Bottom */
-    const bottomStarts = [0].concat(doors.bottom.map(name => GAPS[name][1]));
-    const bottomEnds = doors.bottom.map(name => GAPS[name][0]).concat(ROOM_SCALE_WIDTH);
+    const bottomStarts = [0].concat(getGapNames(doors.bottom).map(name => GAPS[name][1]));
+    const bottomEnds = getGapNames(doors.bottom).map(name => GAPS[name][0]).concat(ROOM_SCALE_WIDTH);
     bottomStarts.forEach((left, index) => {
         solids.push(createSolid({ left, right: bottomEnds[index], y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }));
     });
-    doors.bottom.forEach(name => {
+    getGapNames(doors.bottom).forEach(name => {
         solids.push(createSolid(
             { left: GAPS[name][0], right: GAPS[name][1], top: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS / 4 },
             { isDroppable: true },
@@ -41,15 +45,15 @@ const generateRoom = (x, y, doors) => {
     });
 
     /** Left */
-    const leftStarts = [0].concat(doors.left.map(name => GAPS[name][1]));
-    const leftEnds = doors.left.map(name => GAPS[name][0]).concat(ROOM_SCALE_HEIGHT);
+    const leftStarts = [0].concat(getGapNames(doors.left).map(name => GAPS[name][1]));
+    const leftEnds = getGapNames(doors.left).map(name => GAPS[name][0]).concat(ROOM_SCALE_HEIGHT);
     leftStarts.forEach((top, index) => {
         solids.push(createSolid({ top, bottom: leftEnds[index], left: 0, width: WALL_THICKNESS }));
     });
 
     /** Right */
-    const rightStarts = [0].concat(doors.right.map(name => GAPS[name][1]));
-    const rightEnds = doors.right.map(name => GAPS[name][0]).concat(ROOM_SCALE_HEIGHT);
+    const rightStarts = [0].concat(getGapNames(doors.right).map(name => GAPS[name][1]));
+    const rightEnds = getGapNames(doors.right).map(name => GAPS[name][0]).concat(ROOM_SCALE_HEIGHT);
     rightStarts.forEach((top, index) => {
         solids.push(createSolid({ top, bottom: rightEnds[index], left: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS }));
     });

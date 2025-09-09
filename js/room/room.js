@@ -17,6 +17,9 @@ const GAPS = {
     right: [ROOM_SCALE_WIDTH - 240, ROOM_SCALE_WIDTH - 80],
 };
 
+const VERTICAL_DOOR_KEYS = ['left', 'center', 'right'];
+const HORIZONTAL_DOOR_KEYS = ['high', 'medium', 'low'];
+
 class Room {
     constructor(x, y, width, height, color = 'blue', setDoors = {}) {
         /** Room setup */
@@ -30,30 +33,46 @@ class Room {
         /** Basic doorway rectification rules */
         if (x === 0 && y === 0) {
             setDoors = {
-                bottom: ['center'],
-                top: [],
-                left: [],
-                right: [],
+                bottom: { center: true, left: false, right: false },
+                top: { center: false, left: false, right: false },
+                left: { high: false, medium: false, low: false },
+                right: { high: false, medium: false, low: false },
             };
         } else if (x === 0 && y === 1) {
-            setDoors.top = ['center'];
+            setDoors.top = { center: true, left: false, right: false };
         } else if (y === 1) {
-            setDoors.top = [];
+            setDoors.top = { center: false, left: false, right: false };
         }
 
         /** Randomise un-specified doors */
         if (!setDoors.left) {
-            setDoors.left = ['high', 'medium', 'low'].filter(() => Math.random() < 0.5);
+            setDoors.left = {};
         }
         if (!setDoors.right) {
-            setDoors.right = ['high', 'medium', 'low'].filter(() => Math.random() < 0.5);
+            setDoors.right = {};
         }
+        HORIZONTAL_DOOR_KEYS.forEach(key => {
+            if (setDoors.left[key] === undefined) {
+                setDoors.left[key] = Math.random() < 0.5;
+            }
+            if (setDoors.right[key] === undefined) {
+                setDoors.right[key] = Math.random() < 0.5;
+            }
+        });
         if (!setDoors.top) {
-            setDoors.top = ['left', 'center', 'right'].filter(() => Math.random() < 0.5);
+            setDoors.top = {};
         }
         if (!setDoors.bottom) {
-            setDoors.bottom = ['left', 'center', 'right'].filter(() => Math.random() < 0.5);
+            setDoors.bottom = {};
         }
+        VERTICAL_DOOR_KEYS.forEach(key => {
+            if (setDoors.top[key] === undefined) {
+                setDoors.top[key] = Math.random() < 0.5;
+            }
+            if (setDoors.bottom[key] === undefined) {
+                setDoors.bottom[key] = Math.random() < 0.5;
+            }
+        });
 
         this.doors = setDoors;
 
