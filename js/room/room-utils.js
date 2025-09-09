@@ -21,7 +21,7 @@ const generateRoom = (x, y) => {
     const gapBottom = gapTop + GAP_SIZE;
 
     /** Top */
-    if (y >= 2 || (x === 0 && y === 1)) {
+    if (y >= 2 || (x === 0 && y === 1) && Math.random() < 0.8) {
         solids.push(createSolid({ left: 0, right: gapLeft, y: 0, height: WALL_THICKNESS }));
         solids.push(createSolid({ left: gapRight, right: ROOM_SCALE_WIDTH, y: 0, height: WALL_THICKNESS }));
     } else {
@@ -29,19 +29,26 @@ const generateRoom = (x, y) => {
     }
 
     /** Bottom */
-    solids.push(createSolid({ left: 0, right: gapLeft, y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }));
-    solids.push(createSolid({ left: gapRight, right: ROOM_SCALE_WIDTH, y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }));
+    if (y === 0 || Math.random() < 0.8) {
+        solids.push(createSolid({ left: 0, right: gapLeft, y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }));
+        solids.push(createSolid({ left: gapRight, right: ROOM_SCALE_WIDTH, y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }));
+    } else {
+        solids.push(createSolid({ left: 0, right: ROOM_SCALE_WIDTH, y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }));
+    }
 
-    if (y >= 1) {
-        /** Left */
+    /** Left */
+    if (y >= 1 && Math.random() < 0.8) {
         solids.push(createSolid({ x: 0, width: WALL_THICKNESS, top: 0, bottom: gapTop }));
         solids.push(createSolid({ x: 0, width: WALL_THICKNESS, top: gapBottom, bottom: ROOM_SCALE_HEIGHT }));
-        /** Right */
+    } else {
+        solids.push(createSolid({ x: 0, width: WALL_THICKNESS, top: 0, bottom: ROOM_SCALE_HEIGHT }));
+    }
+
+    /** Right */
+    if (y >= 1 && Math.random() < 0.8) {
         solids.push(createSolid({ x: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS, top: 0, bottom: gapTop }));
         solids.push(createSolid({ x: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS, top: gapBottom, bottom: ROOM_SCALE_HEIGHT }));
     } else {
-        solids.push(createSolid({ x: 0, width: WALL_THICKNESS, top: 0, bottom: ROOM_SCALE_HEIGHT }));
-        /** Right */
         solids.push(createSolid({ x: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS, top: 0, bottom: ROOM_SCALE_HEIGHT }));
     }
 

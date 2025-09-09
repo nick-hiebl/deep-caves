@@ -110,7 +110,7 @@ class CaveWorld {
         const mousingOverValidOption = this.mouseOverChoiceIndex >= 0 && this.mouseOverChoiceIndex < this.choices.length;
 
         if (choosing && mousingOverValidOption) {
-            const newRoom = new Room(this.worldMap.x, this.worldMap.y, 1, 1, this.choices[this.mouseOverChoiceIndex].color);
+            const newRoom = this.choices[this.mouseOverChoiceIndex];
             this.worldMap.addRoom(newRoom);
 
             const lastRoom = this.worldMap.getPreviousRoom();
@@ -134,6 +134,7 @@ class CaveWorld {
 
         newRoom.playerState.actor.x = worldX - newRoom.x * ROOM_SCALE_WIDTH;
         newRoom.playerState.actor.y = worldY - newRoom.y * ROOM_SCALE_HEIGHT;
+
         /** If falling room to room cap their new y to 1px down */
         if (newRoom.y >= lastRoom.y + lastRoom.height) {
             newRoom.playerState.actor.y = Math.min(newRoom.playerState.actor.y, 1);
@@ -198,11 +199,9 @@ class CaveWorld {
             if (mouseInside) {
                 this.mouseOverChoiceIndex = i;
                 ctx.scale(1.1, 1.1);
-            } else {
-                // ctx.scale(0.6, 0.6);
             }
 
-            ctx.translate(-(ROOM_SCALE_WIDTH / 2), -(ROOM_SCALE_HEIGHT / 2));
+            ctx.translate(-ROOM_SCALE_WIDTH / 2, -ROOM_SCALE_HEIGHT / 2);
 
             roomChoice.drawForMap(ctx, canvas);
 
