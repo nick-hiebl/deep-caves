@@ -23,7 +23,7 @@ class WorldMap {
         this.minY = 0;
 
         const room = new Room(0, 0, 1, 1);
-        
+
         this.map[this.index(0, 0)] = room;
 
         this.createNewCanvas(0, 0, 0, 0);
@@ -37,6 +37,27 @@ class WorldMap {
 
         this.canvas = new OffscreenCanvas(cols * MAP_ROOM_WIDTH, rows * MAP_ROOM_HEIGHT);
         this.ctx = this.canvas.getContext('2d');
+    }
+
+    getNeighboringDoors(x, y) {
+        return {
+            right: this.map[this.index(x + 1, y)]?.doors?.left,
+            left: this.map[this.index(x - 1, y)]?.doors?.right,
+            top: this.map[this.index(x, y - 1)]?.doors?.bottom,
+            bottom: this.map[this.index(x, y + 1)]?.doors?.top,
+        };
+    }
+
+    generateRoomChoices(x, y) {
+        const makeColor = () => `hsl(${randint(0, 360)}, 60%, 60%)`;
+
+        const doors = this.getNeighboringDoors(x, y);
+
+        return [
+            new Room(x, y, 1, 1, makeColor(), { ...doors }),
+            new Room(x, y, 1, 1, makeColor(), { ...doors }),
+            new Room(x, y, 1, 1, makeColor(), { ...doors }),
+        ];
     }
 
     redrawWorldMap() {
@@ -71,14 +92,14 @@ class WorldMap {
         const drawWidth = Math.min(width, this.canvas.width);
         const drawHeight = Math.min(height, this.canvas.height);
 
-        const xOffset = (-this.minX + this.x + 1/2) * MAP_ROOM_WIDTH - width / 2;
+        const xOffset = (-this.minX + this.x + 1 / 2) * MAP_ROOM_WIDTH - width / 2;
 
         ctx.drawImage(this.canvas, xOffset, 0, drawWidth, drawHeight, x, y, drawWidth, drawHeight);
 
         ctx.strokeStyle = 'white';
         ctx.lineWidth = CURRENT_ROOM_BORDER;
         ctx.strokeRect(
-            -xOffset + (this.x - this.minX + 1/2) * MAP_ROOM_WIDTH - CURRENT_ROOM_BORDER,
+            -xOffset + (this.x - this.minX + 1 / 2) * MAP_ROOM_WIDTH - CURRENT_ROOM_BORDER,
             y + this.y * MAP_ROOM_HEIGHT - CURRENT_ROOM_BORDER,
             MAP_ROOM_WIDTH + CURRENT_ROOM_BORDER * 2,
             MAP_ROOM_HEIGHT + CURRENT_ROOM_BORDER * 2,

@@ -7,8 +7,18 @@ const GAP_SIZE = WALL_THICKNESS * 6;
 
 const EPSILON = 0.01;
 
+const GAPS = {
+    high: [80, 160],
+    medium: [ROOM_SCALE_HEIGHT / 2 - 40, ROOM_SCALE_HEIGHT / 2 + 40],
+    low: [ROOM_SCALE_HEIGHT - 160, ROOM_SCALE_HEIGHT - 80],
+
+    left: [80, 160],
+    center: [ROOM_SCALE_WIDTH / 2 - 40, ROOM_SCALE_WIDTH / 2 + 40],
+    right: [ROOM_SCALE_WIDTH - 160, ROOM_SCALE_WIDTH - 80],
+};
+
 class Room {
-    constructor(x, y, width, height, color = 'blue') {
+    constructor(x, y, width, height, color = 'blue', setDoors = {}) {
         /** Room setup */
         this.x = x;
         this.y = y;
@@ -17,8 +27,38 @@ class Room {
 
         this.color = color;
 
+        /** Basic doorway rectification rules */
+        if (x === 0 && y === 0) {
+            setDoors = {
+                bottom: ['center'],
+                top: [],
+                left: [],
+                right: [],
+            };
+        } else if (x === 0 && y === 1) {
+            setDoors.top = ['center'];
+        } else if (y === 1) {
+            setDoors.top = [];
+        }
+
+        /** Randomise un-specified doors */
+        if (!setDoors.left) {
+            setDoors.left = ['high', 'medium', 'low'].filter(() => Math.random() < 0.5);
+        }
+        if (!setDoors.right) {
+            setDoors.right = ['high', 'medium', 'low'].filter(() => Math.random() < 0.5);
+        }
+        if (!setDoors.top) {
+            setDoors.top = ['left', 'center', 'right'].filter(() => Math.random() < 0.5);
+        }
+        if (!setDoors.bottom) {
+            setDoors.bottom = ['left', 'center', 'right'].filter(() => Math.random() < 0.5);
+        }
+
+        this.doors = setDoors;
+
         /** Inner room setup */
-        this.solids = generateRoom(x, y);
+        this.solids = generateRoom(x, y, this.doors);
         this.interactive = new MovingPlatform(0, 280, 200, 40);
         this.solids.push(this.interactive.solid);
 

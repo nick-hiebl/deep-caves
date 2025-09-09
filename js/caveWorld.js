@@ -5,16 +5,6 @@ const MAP_KEY = 'Tab';
 const MAP_INSET = 64;
 const MAP_BORDER = 4;
 
-const generateChoices = (x, y) => {
-    const makeColor = () => `hsl(${randint(0, 360)}, 60%, 60%)`;
-
-    return [
-        new Room(x, y, 1, 1, makeColor()),
-        new Room(x, y, 1, 1, makeColor()),
-        new Room(x, y, 1, 1, makeColor()),
-    ];
-}
-
 class CaveWorld {
     constructor() {
         this.worldMap = new WorldMap();
@@ -54,7 +44,7 @@ class CaveWorld {
         /** Choices setup */
         if (this.pausedFor === 'choices') {
             if (this.choices.length === 0) {
-                this.choices = generateChoices(this.worldMap.x, this.worldMap.y);
+                this.choices = this.worldMap.generateRoomChoices(this.worldMap.x, this.worldMap.y);
             }
 
             this.draw(ctx, canvas, mousePosition, 0);
