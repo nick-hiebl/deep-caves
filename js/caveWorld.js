@@ -5,23 +5,14 @@ const MAP_KEY = 'Tab';
 const MAP_INSET = 64;
 const MAP_BORDER = 4;
 
-const generateChoices = () => {
+const generateChoices = (x, y) => {
+    const makeColor = () => `hsl(${randint(0, 360)}, 60%, 60%)`;
+
     return [
-        new RoomChoice(),
-        new RoomChoice(),
-        new RoomChoice(),
+        new Room(x, y, 1, 1, makeColor()),
+        new Room(x, y, 1, 1, makeColor()),
+        new Room(x, y, 1, 1, makeColor()),
     ];
-}
-
-class RoomChoice {
-    constructor() {
-        this.color = `hsl(${randint(0, 360)}, 60%, 60%)`;
-    }
-
-    draw(ctx, _canvas) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(0, 0, 50, 50);
-    }
 }
 
 class CaveWorld {
@@ -63,25 +54,17 @@ class CaveWorld {
         /** Choices setup */
         if (this.pausedFor === 'choices') {
             if (this.choices.length === 0) {
-                this.choices = generateChoices();
+                this.choices = generateChoices(this.worldMap.x, this.worldMap.y);
             }
 
             this.draw(ctx, canvas, mousePosition, 0);
+            this.drawMap(ctx, canvas);
             this.drawOptions(ctx, canvas, mousePosition);
             return;
         } else if (this.pausedFor === 'Tab') {
             this.draw(ctx, canvas, mousePosition, 0);
 
-            ctx.fillStyle = '#00000099';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = 'white';
-            ctx.fillRect(MAP_INSET - MAP_BORDER, MAP_INSET - MAP_BORDER, canvas.height - (MAP_INSET - MAP_BORDER) * 2, canvas.height - (MAP_INSET - MAP_BORDER) * 2);
-
-            ctx.fillStyle = 'black';
-            ctx.fillRect(MAP_INSET, MAP_INSET, canvas.height - MAP_INSET * 2, canvas.height - MAP_INSET * 2);
-
-            this.worldMap.drawMapToScreen(ctx, MAP_INSET, MAP_INSET, canvas.height - MAP_INSET * 2, canvas.height - MAP_INSET * 2);
+            this.drawMap(ctx, canvas);
             return;
         }
 
@@ -107,6 +90,19 @@ class CaveWorld {
         const interpolationFactor = this.unprocessedTime / FRAME_DURATION;
 
         this.draw(ctx, canvas, mousePosition, interpolationFactor);
+    }
+
+    drawMap(ctx, canvas) {
+        ctx.fillStyle = '#00000099';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = 'white';
+        ctx.fillRect(MAP_INSET - MAP_BORDER, MAP_INSET - MAP_BORDER, canvas.height - (MAP_INSET - MAP_BORDER) * 2, canvas.height - (MAP_INSET - MAP_BORDER) * 2);
+
+        ctx.fillStyle = 'black';
+        ctx.fillRect(MAP_INSET, MAP_INSET, canvas.height - MAP_INSET * 2, canvas.height - MAP_INSET * 2);
+
+        this.worldMap.drawMapToScreen(ctx, MAP_INSET, MAP_INSET, canvas.height - MAP_INSET * 2, canvas.height - MAP_INSET * 2);
     }
 
     click(_canvas, _mousePosition) {
@@ -173,31 +169,42 @@ class CaveWorld {
     }
 
     drawOptions(ctx, canvas, mousePosition) {
-        ctx.fillStyle = '#00000099';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         this.mouseOverChoiceIndex = -1;
 
         for (let i = 0; i < this.choices.length; i++) {
             const roomChoice = this.choices[i];
 
-            const width = canvas.width / this.choices.length;
-            const left = i * width;
-            const right = left + width;
+            const left = canvas.height;
+            const right = canvas.width;
             const middle = (left + right) / 2;
+            const height = canvas.height / this.choices.length;
+            const top = height * i;
+            const bottom = top + height;
 
             ctx.save();
-            ctx.translate(middle, (canvas.height) / 2);
+            ctx.translate(middle, (top + bottom) / 2);
 
-            const mouseInside = mousePosition && left < mousePosition.x && mousePosition.x < right;
+            const mouseInside = mousePosition && isPointInside({
+                x: left,
+                y: top,
+                width: right - left,
+                height,
+            }, mousePosition.x, mousePosition.y);
+
+            const scaleFactor = (right - left) / ROOM_SCALE_WIDTH * 0.5;
+
+            ctx.scale(scaleFactor, scaleFactor);
+
             if (mouseInside) {
                 this.mouseOverChoiceIndex = i;
-                ctx.scale(0.75, 0.75);
+                ctx.scale(1.1, 1.1);
             } else {
-                ctx.scale(0.6, 0.6);
+                // ctx.scale(0.6, 0.6);
             }
 
-            roomChoice.draw(ctx, canvas);
+            ctx.translate(-(ROOM_SCALE_WIDTH / 2), -(ROOM_SCALE_HEIGHT / 2));
+
+            roomChoice.drawForMap(ctx, canvas);
 
             ctx.restore();
         }
