@@ -1,4 +1,4 @@
-const LOOP_DUR = 3000;
+const LOOP_DUR = 7000;
 
 class MovingPlatform {
     constructor(x, y, width, height) {
@@ -12,7 +12,7 @@ class MovingPlatform {
 
         const timeInCycle = this.timeTracked % LOOP_DUR;
 
-        const shouldBeInCycle = timeInCycle > LOOP_DUR / 2 ? (LOOP_DUR - timeInCycle) / 3 : timeInCycle / 3;
+        const shouldBeInCycle = 300 + (timeInCycle > LOOP_DUR / 2 ? (LOOP_DUR - timeInCycle) / 7 : timeInCycle / 7);
         this.solid.move(shouldBeInCycle - this.solid.x, 0, actors, solids);
     }
 }

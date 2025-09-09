@@ -82,7 +82,7 @@ class Room {
         this.solids.push(this.interactive.solid);
 
         /** Player setup */
-        this.playerState = new PlayerState(0.4 * ROOM_SCALE_WIDTH, 0.4 * ROOM_SCALE_HEIGHT);
+        this.playerState = new PlayerState(0.5 * ROOM_SCALE_WIDTH, 0.12 * ROOM_SCALE_HEIGHT);
 
         this.enemies = [
             new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),

@@ -42,6 +42,9 @@ const getImageCoordinates = (attacking, facing, hasShield) => {
 
 class PlayerState {
     constructor(x, y) {
+        x = Math.round(x);
+        y = Math.round(y);
+
         this.lastState = { x, y };
 
         this.x = x;
