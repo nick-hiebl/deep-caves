@@ -99,8 +99,8 @@ class Room {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         for (const solid of this.solids) {
-            if (solid.blocker) {
-                ctx.fillStyle = 'brown';
+            if (solid.color) {
+                ctx.fillStyle = solid.color;
             } else {
                 ctx.fillStyle = this.color;
             }

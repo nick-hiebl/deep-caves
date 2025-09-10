@@ -85,6 +85,7 @@ const generateRoom = (x, y, doors) => {
 
     return blockers.map(blocker => {
         blocker.blocker = true;
+        blocker.color = 'brown';
         blocker.isCollidable = false;
         return blocker;
     }).concat(solids);
