@@ -8,13 +8,13 @@ const GAP_SIZE = WALL_THICKNESS * 6;
 const EPSILON = 0.01;
 
 const GAPS = {
-    high: [80, 240],
-    medium: [ROOM_SCALE_HEIGHT / 2 - 80, ROOM_SCALE_HEIGHT / 2 + 80],
-    low: [ROOM_SCALE_HEIGHT - 240, ROOM_SCALE_HEIGHT - 80],
+    high: [120, 240],
+    medium: [ROOM_SCALE_HEIGHT / 2 - 40, ROOM_SCALE_HEIGHT / 2 + 80],
+    low: [ROOM_SCALE_HEIGHT - 160, ROOM_SCALE_HEIGHT - 40],
 
-    left: [80, 240],
-    center: [ROOM_SCALE_WIDTH / 2 - 80, ROOM_SCALE_WIDTH / 2 + 80],
-    right: [ROOM_SCALE_WIDTH - 240, ROOM_SCALE_WIDTH - 80],
+    left: [80, 280],
+    center: [ROOM_SCALE_WIDTH / 2 - 100, ROOM_SCALE_WIDTH / 2 + 100],
+    right: [ROOM_SCALE_WIDTH - 280, ROOM_SCALE_WIDTH - 80],
 };
 
 const VERTICAL_DOOR_KEYS = ['left', 'center', 'right'];
