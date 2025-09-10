@@ -140,7 +140,7 @@ class CaveWorld {
         room.update(mousePosition, keyboardState, FRAME_DURATION, this.onRoomChange.bind(this));
     }
 
-    onRoomChange(x, y) {
+    onRoomChange(x, y, doors) {
         if (this.worldMap.hasRoom(x, y)) {
             this.worldMap.enterRoom(x, y);
 
@@ -148,6 +148,7 @@ class CaveWorld {
         } else {
             this.pausedFor = 'choices';
             this.worldMap.enterRoom(x, y);
+            this.choices = this.worldMap.generateRoomChoices(this.worldMap.x, this.worldMap.y, doors);
         }
     }
 

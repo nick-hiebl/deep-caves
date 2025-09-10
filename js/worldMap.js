@@ -48,14 +48,21 @@ class WorldMap {
         };
     }
 
-    generateRoomChoices(x, y) {
+    generateRoomChoices(x, y, suggestedDoors = {}) {
         const makeColor = () => `hsl(${randint(0, 360)}, 60%, 60%)`;
+
+        const cloneDoors = () => ({
+            left: { ...(suggestedDoors.left ?? {}) },
+            right: { ...(suggestedDoors.right ?? {}) },
+            top: { ...(suggestedDoors.top ?? {}) },
+            bottom: { ...(suggestedDoors.bottom ?? {}) },
+        });
 
         /** Must re-compute neighboring doors for each as otherwise each instance will be shared. */
         return [
-            new Room(x, y, 1, 1, makeColor(), this.getNeighboringDoors(x, y)),
-            new Room(x, y, 1, 1, makeColor(), this.getNeighboringDoors(x, y)),
-            new Room(x, y, 1, 1, makeColor(), this.getNeighboringDoors(x, y)),
+            new Room(x, y, 1, 1, makeColor(), cloneDoors()),
+            new Room(x, y, 1, 1, makeColor(), cloneDoors()),
+            new Room(x, y, 1, 1, makeColor(), cloneDoors()),
         ];
     }
 

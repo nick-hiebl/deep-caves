@@ -151,13 +151,29 @@ class Room {
     validateLeavingRoom(onRoomChange) {
         const playerMidpoint = this.playerState.actor.getMidpoint();
         if (playerMidpoint.x > ROOM_SCALE_WIDTH) {
-            onRoomChange(this.x + 1, this.y);
+            const doors = { left: {} };
+            const relevantGap = ['high', 'medium', 'low']
+                .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
+            doors.left[relevantGap] = true;
+            onRoomChange(this.x + 1, this.y, doors);
         } else if (playerMidpoint.x < 0) {
-            onRoomChange(this.x - 1, this.y);
+            const doors = { right: {} };
+            const relevantGap = ['high', 'medium', 'low']
+                .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
+            doors.right[relevantGap] = true;
+            onRoomChange(this.x - 1, this.y, doors);
         } else if (playerMidpoint.y > ROOM_SCALE_HEIGHT) {
-            onRoomChange(this.x, this.y + 1);
+            const doors = { top: {} };
+            const relevantGap = ['left', 'center', 'right']
+                .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
+            doors.top[relevantGap] = true;
+            onRoomChange(this.x, this.y + 1, doors);
         } else if (playerMidpoint.y < 0) {
-            onRoomChange(this.x, this.y - 1);
+            const doors = { bottom: {} };
+            const relevantGap = ['left', 'center', 'right']
+                .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
+            doors.bottom[relevantGap] = true;
+            onRoomChange(this.x, this.y - 1, doors);
         }
     }
 

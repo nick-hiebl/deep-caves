@@ -12,7 +12,9 @@ const createSolid = (args, config) => {
 }
 
 const getGapNames = (gapMap) => {
-    return Object.keys(gapMap).filter(key => gapMap[key]);
+    const names = Object.keys(gapMap).filter(key => gapMap[key]);
+    names.sort((a, b) => GAPS[a][0] - GAPS[b][0]);
+    return names;
 };
 
 const generateRoom = (x, y, doors) => {
