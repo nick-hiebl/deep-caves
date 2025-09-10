@@ -11,10 +11,29 @@ const createSolid = (args, config) => {
     return new Solid(x, y, width, height, config);
 }
 
-const getGapNames = (gapMap) => {
+const getGapNames = (gapMap = {}) => {
     const names = Object.keys(gapMap).filter(key => gapMap[key]);
     names.sort((a, b) => GAPS[a][0] - GAPS[b][0]);
     return names;
+};
+
+const getDoorBlockingSolids = (doors) => {
+    const solids = [];
+
+    solids.push(...getGapNames(doors.left).map(name => GAPS[name]).map(([top, bottom]) =>
+        createSolid({ top, bottom, left: 0, width: WALL_THICKNESS }),
+    ));
+    solids.push(...getGapNames(doors.right).map(name => GAPS[name]).map(([top, bottom]) =>
+        createSolid({ top, bottom, left: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS }),
+    ));
+    solids.push(...getGapNames(doors.top).map(name => GAPS[name]).map(([left, right]) =>
+        createSolid({ left, right, top: 0, height: WALL_THICKNESS }),
+    ));
+    solids.push(...getGapNames(doors.bottom).map(name => GAPS[name]).map(([left, right]) =>
+        createSolid({ left, right, top: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }),
+    ));
+
+    return solids;
 };
 
 const generateRoom = (x, y, doors) => {

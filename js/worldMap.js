@@ -147,6 +147,30 @@ class WorldMap {
 
         this.map[this.currentIndex] = room;
 
+        /** Left room */
+        this.map[this.index(this.x - 1, this.y)]?.setExternalMatchingDoorways?.({
+            right: room.doors.left,
+        });
+        /** Right room */
+        this.map[this.index(this.x + 1, this.y)]?.setExternalMatchingDoorways?.({
+            left: room.doors.right,
+        });
+        /** Top room */
+        this.map[this.index(this.x, this.y - 1)]?.setExternalMatchingDoorways?.({
+            bottom: room.doors.top,
+        });
+        /** Bottom room */
+        this.map[this.index(this.x, this.y + 1)]?.setExternalMatchingDoorways?.({
+            top: room.doors.bottom,
+        });
+
+        room.setExternalMatchingDoorways({
+            left: this.map[this.index(this.x - 1, this.y)]?.doors?.right,
+            right: this.map[this.index(this.x + 1, this.y)]?.doors?.left,
+            top: this.map[this.index(this.x, this.y - 1)]?.doors?.bottom,
+            bottom: this.map[this.index(this.x, this.y + 1)]?.doors?.top,
+        })
+
         this.redrawWorldMap();
     }
 }

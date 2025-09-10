@@ -20,6 +20,13 @@ const GAPS = {
 const VERTICAL_DOOR_KEYS = ['left', 'center', 'right'];
 const HORIZONTAL_DOOR_KEYS = ['high', 'medium', 'low'];
 
+const OPPOSITE_FACE = {
+    left: 'right',
+    right: 'left',
+    top: 'bottom',
+    bottom: 'top',
+};
+
 class Room {
     constructor(x, y, width, height, color = 'blue', setDoors = {}) {
         /** Room setup */
@@ -175,6 +182,24 @@ class Room {
             doors.bottom[relevantGap] = true;
             onRoomChange(this.x, this.y - 1, doors);
         }
+    }
+
+    setExternalMatchingDoorways(doors) {
+        const doorsToBlock = {};
+
+        for (const face in doors) {
+            for (const doorway in doors[face]) {
+                if (doors[face][doorway] === false && this.doors[face][doorway] === true) {
+                    doorsToBlock[face] = doorsToBlock[face] ?? {};
+                    doorsToBlock[face][doorway] = true;
+                }
+            }
+        }
+
+        this.solids.push(...getDoorBlockingSolids(doorsToBlock).map(solid => {
+            solid.color = 'yellow';
+            return solid;
+        }));
     }
 
     drawForMap(mapCtx) {
