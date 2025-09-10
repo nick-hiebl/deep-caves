@@ -30,6 +30,9 @@ class Room {
 
         this.color = color;
 
+        this.blockersLocked = false;
+        this.allEnemiesCleared = false;
+
         /** Basic doorway rectification rules */
         if (x === 0 && y === 0) {
             setDoors = {
@@ -95,10 +98,12 @@ class Room {
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        /** Outer boundaries */
-        ctx.fillStyle = this.color;
-
         for (const solid of this.solids) {
+            if (solid.blocker) {
+                ctx.fillStyle = 'brown';
+            } else {
+                ctx.fillStyle = this.color;
+            }
             ctx.fillRect(solid.x, solid.y, solid.width, solid.height);
         }
 
@@ -113,6 +118,19 @@ class Room {
     }
 
     update(mousePosition, keyboardState, frameDuration, onRoomChange) {
+        if (!this.blockersLocked) {
+            if (this.solids.some(solid => solid.blocker && overlaps(this.playerState.actor, solid))) {
+                // Not yet
+            } else {
+                this.solids.forEach(solid => {
+                    if (solid.blocker) {
+                        solid.isCollidable = true;
+                    }
+                });
+                this.blockersLocked = true;
+            }
+        }
+
         this.interactive.update(frameDuration, [this.playerState.actor], this.solids);
 
         this.enemies.forEach(enemy => {
@@ -122,6 +140,10 @@ class Room {
         this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids, this.enemies);
 
         this.enemies = this.enemies.filter(enemy => enemy.alive);
+
+        if (!this.allEnemiesCleared && this.enemies.length === 0) {
+            this.solids = this.solids.filter(solid => !solid.blocker);
+        }
 
         this.validateLeavingRoom(onRoomChange);
     }
@@ -143,6 +165,9 @@ class Room {
         mapCtx.fillStyle = this.color;
 
         for (const solid of this.solids) {
+            if (solid.blocker) {
+                continue;
+            }
             mapCtx.fillRect(solid.x, solid.y, solid.width, solid.height);
         }
     }

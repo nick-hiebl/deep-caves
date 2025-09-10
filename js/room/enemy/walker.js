@@ -5,6 +5,8 @@ class Walker extends Enemy {
     constructor(...args) {
         super(...args);
 
+        this.hp = 5;
+
         this.isNonPhysical = false;
         this.facing = 'left';
     }
@@ -60,7 +62,6 @@ class Walker extends Enemy {
 
     applyDamage() {
         super.applyDamage();
-        this.hp += 10;
         this.yVelocity -= 0.3;
     }
 }
