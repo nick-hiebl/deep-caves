@@ -27,9 +27,14 @@ class Enemy {
         this.facing = 'left';
 
         this.isNonPhysical = true;
+
+        this.hurtVisualiser = incDecLatch(1, 250);
     }
 
     draw(ctx) {
+        if (this.hurtVisualiser.check() > 0) {
+            ctx.filter = 'brightness(1000%) saturate(0%)';
+        }
         ctx.drawImage(
             GHOSTY_SPRITE,
             this.facing === 'left' ? 0 : ENEMY_WIDTH,
@@ -41,6 +46,7 @@ class Enemy {
             this.actor.width,
             this.actor.height,
         );
+        ctx.filter = 'none';
 
         if (DRAW_FRAME_MARKERS) {
             ctx.strokeStyle = 'white';
@@ -58,6 +64,8 @@ class Enemy {
             this.actor.moveX(this.xVelocity * frameDuration, () => { this.xVelocity = 0 }, solids);
             this.actor.moveY(this.yVelocity * frameDuration, () => { this.yVelocity = 0 }, solids);
         }
+
+        this.hurtVisualiser.down(frameDuration);
     }
 
     updateVelocities(_frameDuration, _solids, playerPosition) {
@@ -88,5 +96,7 @@ class Enemy {
         if (this.hp <= 0) {
             this.alive = false;
         }
+
+        this.hurtVisualiser.up();
     }
 }
