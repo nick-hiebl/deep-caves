@@ -58,12 +58,27 @@ class WorldMap {
             bottom: { ...(suggestedDoors.bottom ?? {}) },
         });
 
-        /** Must re-compute neighboring doors for each as otherwise each instance will be shared. */
-        return [
-            new Room(x, y, 1, 1, makeColor(), cloneDoors()),
-            new Room(x, y, 1, 1, makeColor(), cloneDoors()),
-            new Room(x, y, 1, 1, makeColor(), cloneDoors()),
-        ];
+        const CONSTRUCTORS = [LRoom];
+
+        const checkDoors = cloneDoors();
+
+        const acceptableConstructors = CONSTRUCTORS.filter(Class => Class.areDoorsOk(checkDoors));
+
+        /** TODO: Shuffle constructors */
+
+        /** Pad with auto-generators */
+        acceptableConstructors.push(Room, Room, Room);
+
+        const choices = [];
+
+        for (let i = 0; i < 3; i++) {
+            const RoomType = acceptableConstructors.shift();
+
+            /** Must re-compute neighboring doors for each as otherwise each instance will be shared. */
+            choices.push(new RoomType(x, y, 1, 1, makeColor(), cloneDoors()));
+        }
+
+        return choices;
     }
 
     redrawWorldMap() {

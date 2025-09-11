@@ -28,6 +28,11 @@ const OPPOSITE_FACE = {
 };
 
 class Room {
+    /** Default room constructor works for any door arrangement */
+    static areDoorsOk(_setDoors = {}) {
+        return true;
+    }
+
     constructor(x, y, width, height, color = 'blue', setDoors = {}) {
         /** Room setup */
         this.x = x;
@@ -47,22 +52,16 @@ class Room {
             bottom: setDoors.bottom ?? {},
         };
 
-        this.globalDoorwayRectification();
-        this.randomizeUnspecifiedDoors();
+        this.enemies = [];
+        this.solids = [];
+        this.interactives = [];
 
-        /** Inner room setup */
-        const { solids, blockers } = generateRoomForDoors(this.doors);
-        this.solids = solids.concat(blockers);
-        this.interactive = new MovingPlatform(0, 280, 200, 40);
-        this.solids.push(this.interactive.solid);
+        this.globalDoorwayRectification();
+        this.configureAllDoors();
+        this.configureRoomContent();
 
         /** Player setup */
         this.playerState = new PlayerState(0.5 * ROOM_SCALE_WIDTH, 0.12 * ROOM_SCALE_HEIGHT);
-
-        this.enemies = [
-            new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
-            new Walker(ROOM_SCALE_WIDTH / 4 * 3, ROOM_SCALE_HEIGHT / 2),
-        ];
     }
 
     globalDoorwayRectification() {
@@ -81,8 +80,8 @@ class Room {
         }
     }
 
-    randomizeUnspecifiedDoors() {
-        /** Randomise un-specified doors */
+    /** Randomise un-specified doors */
+    configureAllDoors() {
         HORIZONTAL_DOOR_KEYS.forEach(key => {
             if (this.doors.left[key] === undefined) {
                 this.doors.left[key] = Math.random() < 0.5;
@@ -99,6 +98,20 @@ class Room {
                 this.doors.bottom[key] = Math.random() < 0.5;
             }
         });
+    }
+
+    /** Create room with outer boundary, a few ladders, enemies, and a moving platform */
+    configureRoomContent() {
+        /** Inner room setup */
+        const { solids, blockers, ladders } = generateRoomForDoors(this.doors);
+        this.solids = solids.concat(blockers).concat(ladders);
+        this.interactives = [new MovingPlatform(0, 280, 200, 40)];
+        this.solids.push(...this.interactives.map(i => i.solid));
+
+        this.enemies = [
+            new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
+            new Walker(ROOM_SCALE_WIDTH / 4 * 3, ROOM_SCALE_HEIGHT / 2),
+        ];
     }
 
     draw(ctx, canvas, mousePosition, interpolationFactor) {
@@ -139,7 +152,9 @@ class Room {
             }
         }
 
-        this.interactive.update(frameDuration, [this.playerState.actor], this.solids);
+        this.interactives.forEach(interactive => {
+            interactive.update(frameDuration, [this.playerState.actor], this.solids);
+        });
 
         this.enemies.forEach(enemy => {
             enemy.update(frameDuration, this.solids, this.playerState.actor.getMidpoint());

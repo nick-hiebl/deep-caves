@@ -89,17 +89,19 @@ const generateRoomForDoors = doors => {
         createSolid({ top, bottom, x: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS }),
     ));
 
+    const ladders = [];
+
     /** Add left ladder */
-    solids.push(createSolid(
+    ladders.push(createSolid(
         { left: gapLeft - GAP_SIZE, width: GAP_SIZE, top: 420, height: WALL_THICKNESS / 4 },
         { isDroppable: true },
     ));
-    solids.push(createSolid(
+    ladders.push(createSolid(
         { left: gapLeft - GAP_SIZE, width: GAP_SIZE, top: 570, height: WALL_THICKNESS / 4 },
         { isDroppable: true },
     ));
     /** Add top platform */
-    solids.push(createSolid(
+    ladders.push(createSolid(
         { left: gapLeft, right: gapRight, top: 140, height: WALL_THICKNESS / 4 },
         { isDroppable: true },
     ));
@@ -112,5 +114,6 @@ const generateRoomForDoors = doors => {
             return blocker;
         }),
         solids,
+        ladders,
     };
 };
