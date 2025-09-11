@@ -36,7 +36,7 @@ const getDoorBlockingSolids = (doors) => {
     return solids;
 };
 
-const generateRoom = (x, y, doors) => {
+const generateRoomForDoors = doors => {
     const solids = [];
     const blockers = [];
 
@@ -104,10 +104,13 @@ const generateRoom = (x, y, doors) => {
         { isDroppable: true },
     ));
 
-    return blockers.map(blocker => {
-        blocker.blocker = true;
-        blocker.color = 'brown';
-        blocker.isCollidable = false;
-        return blocker;
-    }).concat(solids);
+    return {
+        blockers: blockers.map(blocker => {
+            blocker.blocker = true;
+            blocker.color = 'brown';
+            blocker.isCollidable = false;
+            return blocker;
+        }),
+        solids,
+    };
 };

@@ -40,54 +40,19 @@ class Room {
         this.blockersLocked = false;
         this.allEnemiesCleared = false;
 
-        /** Basic doorway rectification rules */
-        if (x === 0 && y === 0) {
-            setDoors = {
-                bottom: { center: true, left: false, right: false },
-                top: { center: false, left: false, right: false },
-                left: { high: false, medium: false, low: false },
-                right: { high: false, medium: false, low: false },
-            };
-        } else if (x === 0 && y === 1) {
-            setDoors.top = { center: true, left: false, right: false };
-        } else if (y === 1) {
-            setDoors.top = { center: false, left: false, right: false };
-        }
+        this.doors = {
+            left: setDoors.left ?? {},
+            right: setDoors.right ?? {},
+            top: setDoors.top ?? {},
+            bottom: setDoors.bottom ?? {},
+        };
 
-        /** Randomise un-specified doors */
-        if (!setDoors.left) {
-            setDoors.left = {};
-        }
-        if (!setDoors.right) {
-            setDoors.right = {};
-        }
-        HORIZONTAL_DOOR_KEYS.forEach(key => {
-            if (setDoors.left[key] === undefined) {
-                setDoors.left[key] = Math.random() < 0.5;
-            }
-            if (setDoors.right[key] === undefined) {
-                setDoors.right[key] = Math.random() < 0.5;
-            }
-        });
-        if (!setDoors.top) {
-            setDoors.top = {};
-        }
-        if (!setDoors.bottom) {
-            setDoors.bottom = {};
-        }
-        VERTICAL_DOOR_KEYS.forEach(key => {
-            if (setDoors.top[key] === undefined) {
-                setDoors.top[key] = Math.random() < 0.5;
-            }
-            if (setDoors.bottom[key] === undefined) {
-                setDoors.bottom[key] = Math.random() < 0.5;
-            }
-        });
-
-        this.doors = setDoors;
+        this.globalDoorwayRectification();
+        this.randomizeUnspecifiedDoors();
 
         /** Inner room setup */
-        this.solids = generateRoom(x, y, this.doors);
+        const { solids, blockers } = generateRoomForDoors(this.doors);
+        this.solids = solids.concat(blockers);
         this.interactive = new MovingPlatform(0, 280, 200, 40);
         this.solids.push(this.interactive.solid);
 
@@ -98,6 +63,42 @@ class Room {
             new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
             new Walker(ROOM_SCALE_WIDTH / 4 * 3, ROOM_SCALE_HEIGHT / 2),
         ];
+    }
+
+    globalDoorwayRectification() {
+        /** Basic doorway rectification rules */
+        if (this.x === 0 && this.y === 0) {
+            this.doors = {
+                bottom: { center: true, left: false, right: false },
+                top: { center: false, left: false, right: false },
+                left: { high: false, medium: false, low: false },
+                right: { high: false, medium: false, low: false },
+            };
+        } else if (this.x === 0 && this.y === 1) {
+            this.doors.top = { center: true, left: false, right: false };
+        } else if (this.y === 1) {
+            this.doors.top = { center: false, left: false, right: false };
+        }
+    }
+
+    randomizeUnspecifiedDoors() {
+        /** Randomise un-specified doors */
+        HORIZONTAL_DOOR_KEYS.forEach(key => {
+            if (this.doors.left[key] === undefined) {
+                this.doors.left[key] = Math.random() < 0.5;
+            }
+            if (this.doors.right[key] === undefined) {
+                this.doors.right[key] = Math.random() < 0.5;
+            }
+        });
+        VERTICAL_DOOR_KEYS.forEach(key => {
+            if (this.doors.top[key] === undefined) {
+                this.doors.top[key] = Math.random() < 0.5;
+            }
+            if (this.doors.bottom[key] === undefined) {
+                this.doors.bottom[key] = Math.random() < 0.5;
+            }
+        });
     }
 
     draw(ctx, canvas, mousePosition, interpolationFactor) {
