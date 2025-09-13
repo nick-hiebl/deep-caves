@@ -62,7 +62,9 @@ class WorldMap {
 
         const checkDoors = cloneDoors();
 
-        const acceptableConstructors = CONSTRUCTORS.filter(Class => Class.areDoorsOk(checkDoors));
+        const acceptableConstructors = CONSTRUCTORS.filter(Class =>
+            Class.isValidAt(x, y) && Class.areDoorsOk(checkDoors),
+        );
 
         /** TODO: Shuffle constructors */
 

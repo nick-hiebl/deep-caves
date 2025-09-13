@@ -41,6 +41,10 @@ class Room {
         };
     }
 
+    static isValidAt(_x, _y) {
+        return true;
+    }
+
     /** Default room constructor works for any door arrangement */
     static areDoorsOk(setDoors = {}) {
         const arr = this.getDoorArrangement();

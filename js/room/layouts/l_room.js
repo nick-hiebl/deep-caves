@@ -20,6 +20,10 @@ class LRoom extends Room {
         };
     }
 
+    static isValidAt(_x, y) {
+        return y >= 2;
+    }
+
     /** Create room with outer boundary, a few ladders, enemies, and a moving platform */
     configureRoomContent() {
         /** Inner room setup */
@@ -28,7 +32,7 @@ class LRoom extends Room {
             .concat(blockers)
             .concat(
                 new Solid(380, 0, ROOM_SCALE_WIDTH - 380, 450),
-                new Solid(40, 110, 340, 10, { isDroppable: true }),
+                new Solid(120, 140, 120, 10, { isDroppable: true }),
                 new Solid(40, 240, 340, 10, { isDroppable: true }),
                 new Solid(this.doors.left['center'] ? 160: 40, 340, this.doors.left['center'] ? 220 : 340, 10, { isDroppable: true }),
                 new Solid(40, 440, 340, 10, { isDroppable: true }),

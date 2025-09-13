@@ -28,6 +28,10 @@ class HRoom extends Room {
         };
     }
 
+    static isValidAt(_x, y) {
+        return y >= 2;
+    }
+
     /** Create room with outer boundary, a few ladders, enemies, and a moving platform */
     configureRoomContent() {
         /** Inner room setup */

@@ -39,9 +39,9 @@ class TRoom extends Room {
             )
             .concat(
                 ...[
-                    this.doors.top['left'] ? new Solid(100, 110, 160, 10, { isDroppable: true }) : undefined,
-                    this.doors.top['center'] ? new Solid(560, 110, 160, 10, { isDroppable: true }) : undefined,
-                    this.doors.top['right'] ? new Solid(1020, 110, 160, 10, { isDroppable: true }) : undefined,
+                    this.doors.top['left'] ? new Solid(120, 120, 120, 10, { isDroppable: true }) : undefined,
+                    this.doors.top['center'] ? new Solid(580, 120, 120, 10, { isDroppable: true }) : undefined,
+                    this.doors.top['right'] ? new Solid(1040, 120, 120, 10, { isDroppable: true }) : undefined,
                 ].filter(x => x),
             );
     }
