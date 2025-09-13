@@ -185,7 +185,7 @@ class Room {
         });
 
         this.enemies.forEach(enemy => {
-            enemy.update(frameDuration, this.solids, this.playerState.actor.getMidpoint());
+            enemy.update(frameDuration, this, this.playerState.actor.getMidpoint());
         });
 
         this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids, this.enemies);

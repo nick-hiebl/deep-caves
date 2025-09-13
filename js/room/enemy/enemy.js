@@ -54,21 +54,21 @@ class Enemy {
         }
     }
 
-    update(frameDuration, solids, playerPosition) {
-        this.updateVelocities(frameDuration, solids, playerPosition);
+    update(frameDuration, room, playerPosition) {
+        this.updateVelocities(frameDuration, room, playerPosition);
 
         if (this.isNonPhysical) {
             this.actor.moveX(this.xVelocity * frameDuration, () => { }, []);
             this.actor.moveY(this.yVelocity * frameDuration, () => { }, []);
         } else {
-            this.actor.moveX(this.xVelocity * frameDuration, () => { this.xVelocity = 0 }, solids);
-            this.actor.moveY(this.yVelocity * frameDuration, () => { this.yVelocity = 0 }, solids);
+            this.actor.moveX(this.xVelocity * frameDuration, () => { this.xVelocity = 0 }, room.solids);
+            this.actor.moveY(this.yVelocity * frameDuration, () => { this.yVelocity = 0 }, room.solids);
         }
 
         this.hurtVisualiser.down(frameDuration);
     }
 
-    updateVelocities(_frameDuration, _solids, playerPosition) {
+    updateVelocities(_frameDuration, _room, playerPosition) {
         const myMidpoint = this.actor.getMidpoint();
 
         if (playerPosition) {
