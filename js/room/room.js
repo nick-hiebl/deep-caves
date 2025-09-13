@@ -28,9 +28,30 @@ const OPPOSITE_FACE = {
 };
 
 class Room {
+    getDoorwayChance() {
+        return 0.5;
+    }
+
+    static getDoorArrangement() {
+        return {
+            top: {},
+            bottom: {},
+            left: {},
+            right: {},
+        };
+    }
+
     /** Default room constructor works for any door arrangement */
-    static areDoorsOk(_setDoors = {}) {
-        return true;
+    static areDoorsOk(setDoors = {}) {
+        const arr = this.getDoorArrangement();
+
+        return HORIZONTAL_DOOR_KEYS.every(key => {
+            return (arr.left[key] === undefined || setDoors.left[key] === undefined || arr.left[key] === setDoors.left[key])
+                && (arr.right[key] === undefined || setDoors.right[key] === undefined || arr.right[key] === setDoors.right[key]);
+        }) && VERTICAL_DOOR_KEYS.every(key => {
+            return (arr.top[key] === undefined || setDoors.top[key] === undefined || arr.top[key] === setDoors.top[key])
+                && (arr.bottom[key] === undefined || setDoors.bottom[key] === undefined || arr.bottom[key] === setDoors.bottom[key]);
+        });
     }
 
     constructor(x, y, width, height, color = 'blue', setDoors = {}) {
@@ -82,20 +103,23 @@ class Room {
 
     /** Randomise un-specified doors */
     configureAllDoors() {
+        const arr = this.constructor.getDoorArrangement();
+        const odds = this.getDoorwayChance();
+
         HORIZONTAL_DOOR_KEYS.forEach(key => {
             if (this.doors.left[key] === undefined) {
-                this.doors.left[key] = Math.random() < 0.5;
+                this.doors.left[key] = arr.left[key] ?? Math.random() < odds;
             }
             if (this.doors.right[key] === undefined) {
-                this.doors.right[key] = Math.random() < 0.5;
+                this.doors.right[key] = arr.right[key] ?? Math.random() < odds;
             }
         });
         VERTICAL_DOOR_KEYS.forEach(key => {
             if (this.doors.top[key] === undefined) {
-                this.doors.top[key] = Math.random() < 0.5;
+                this.doors.top[key] = arr.top[key] ?? Math.random() < odds;
             }
             if (this.doors.bottom[key] === undefined) {
-                this.doors.bottom[key] = Math.random() < 0.5;
+                this.doors.bottom[key] = arr.bottom[key] ?? Math.random() < odds;
             }
         });
     }

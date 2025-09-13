@@ -1,31 +1,23 @@
 class LRoom extends Room {
-    /** Default room constructor works for any door arrangement */
-    static areDoorsOk(setDoors = {}) {
-        if (setDoors.top?.center || setDoors.top?.right || setDoors.right?.high || setDoors.right?.medium) {
-            return false;
-        }
-
-        return true;
+    getDoorwayChance() {
+        return 0.1;
     }
 
-    /** Randomise un-specified doors */
-    configureAllDoors() {
-        HORIZONTAL_DOOR_KEYS.forEach(key => {
-            if (this.doors.left[key] === undefined) {
-                this.doors.left[key] = Math.random() < 0.5;
-            }
-            if (key === 'low' && this.doors.right[key] === undefined) {
-                this.doors.right[key] = Math.random() < 0.5;
-            }
-        });
-        VERTICAL_DOOR_KEYS.forEach(key => {
-            if (key === 'left' && this.doors.top[key] === undefined) {
-                this.doors.top[key] = Math.random() < 0.5;
-            }
-            if (this.doors.bottom[key] === undefined) {
-                this.doors.bottom[key] = Math.random() < 0.5;
-            }
-        });
+    static getDoorArrangement() {
+        return {
+            left: {},
+            right: {
+                high: false,
+                medium: false,
+                low: true,
+            },
+            bottom: {},
+            top: {
+                left: true,
+                center: false,
+                right: false,
+            },
+        };
     }
 
     /** Create room with outer boundary, a few ladders, enemies, and a moving platform */
@@ -34,6 +26,13 @@ class LRoom extends Room {
         const { solids, blockers } = generateRoomForDoors(this.doors);
         this.solids = solids
             .concat(blockers)
-            .concat(new Solid(ROOM_SCALE_WIDTH / 2, 0, ROOM_SCALE_WIDTH / 2, ROOM_SCALE_HEIGHT / 2));
+            .concat(
+                new Solid(380, 0, ROOM_SCALE_WIDTH - 380, 450),
+                new Solid(40, 110, 340, 10, { isDroppable: true }),
+                new Solid(40, 240, 340, 10, { isDroppable: true }),
+                new Solid(this.doors.left['center'] ? 160: 40, 340, this.doors.left['center'] ? 220 : 340, 10, { isDroppable: true }),
+                new Solid(40, 440, 340, 10, { isDroppable: true }),
+                new Solid(40, this.doors.left['low'] ? 550 : 540, 240, 10, { isDroppable: true }),
+            );
     }
 }
