@@ -44,5 +44,10 @@ class TRoom extends Room {
                     this.doors.top['right'] ? new Solid(1040, 120, 120, 10, { isDroppable: true }) : undefined,
                 ].filter(x => x),
             );
+
+        this.enemies = [
+            new Walker(ROOM_SCALE_WIDTH / 4, 176),
+            new Walker(ROOM_SCALE_WIDTH * 3 / 4, 176),
+        ];
     }
 }

@@ -58,7 +58,7 @@ class WorldMap {
             bottom: { ...(suggestedDoors.bottom ?? {}) },
         });
 
-        const CONSTRUCTORS = [HRoom, LRoom, TRoom];
+        const CONSTRUCTORS = [HRoom, LRoom, TRoom, PitRoom];
 
         const checkDoors = cloneDoors();
 
