@@ -97,7 +97,10 @@ class PlayerState {
         }
     }
 
-    update(_mousePosition, keyboardState, frameDuration, solids, enemies) {
+    update(_mousePosition, keyboardState, frameDuration, room) {
+        const solids = room.solids;
+        const enemies = room.enemies;
+
         this.lastState = { x: this.x, y: this.y };
 
         this.attackController.update(frameDuration, keyboardState[ATTACK_KEY], () => {
@@ -122,6 +125,21 @@ class PlayerState {
         this.yVelocity += yAcceleration * frameDuration;
 
         if (isJumping) {
+            const PARTICLE_RADIUS = 2;
+            for (let i = 0; i < 5; i++) {
+                const relX = randfloat(-1, 1);
+                room.addParticle(new Particle(
+                    this.actor.x + relX * this.actor.width / 2 * 0.3 - PARTICLE_RADIUS,
+                    this.actor.y + this.actor.height - PARTICLE_RADIUS,
+                    PARTICLE_RADIUS * 2,
+                    PARTICLE_RADIUS * 2,
+                    'white',
+                    relX * 0.3,
+                    randfloat(-0.2, 0.2),
+                    140,
+                ));
+            }
+
             this.yVelocity = -JUMP_MAGNITUDE;
         }
 

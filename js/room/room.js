@@ -80,6 +80,7 @@ class Room {
         this.enemies = [];
         this.solids = [];
         this.interactives = [];
+        this.particles = [];
 
         this.globalDoorwayRectification();
         this.configureAllDoors();
@@ -161,6 +162,11 @@ class Room {
             enemy.draw(ctx);
         });
 
+        /** Draw particles */
+        this.particles.forEach(particle => {
+            particle.draw(ctx);
+        });
+
         /** Draw player */
         ctx.fillStyle = 'white';
         this.playerState.draw(ctx, canvas, mousePosition, interpolationFactor);
@@ -180,6 +186,12 @@ class Room {
             }
         }
 
+        this.particles = this.particles.filter(particle => {
+            particle.update(frameDuration);
+
+            return particle.alive;
+        });
+
         this.interactives.forEach(interactive => {
             interactive.update(frameDuration, [this.playerState.actor], this.solids);
         });
@@ -188,7 +200,7 @@ class Room {
             enemy.update(frameDuration, this, this.playerState.actor.getMidpoint());
         });
 
-        this.playerState.update(mousePosition, keyboardState, frameDuration, this.solids, this.enemies);
+        this.playerState.update(mousePosition, keyboardState, frameDuration, this);
 
         this.enemies = this.enemies.filter(enemy => enemy.alive);
 
@@ -255,5 +267,9 @@ class Room {
             }
             mapCtx.fillRect(solid.x, solid.y, solid.width, solid.height);
         }
+    }
+
+    addParticle(particle) {
+        this.particles.push(particle);
     }
 }

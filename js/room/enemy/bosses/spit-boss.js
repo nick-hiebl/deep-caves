@@ -74,7 +74,7 @@ class SpitBoss {
         if (DRAW_FRAME_MARKERS) {
             ctx.strokeStyle = 'grey';
             ctx.strokeRect(this.baseBox.x, this.baseBox.y, this.baseBox.width, this.baseBox.height);
-    
+
             ctx.strokeStyle = 'yellow';
             ctx.strokeRect(this.headBox.x, this.headBox.y, this.headBox.width, this.headBox.height);
         }
@@ -201,9 +201,40 @@ class SpitBoss_Spit {
     update(frameDuration, room, _playerPosition) {
         this.hitVisualiser.down(frameDuration);
 
+        const wallHit = (drn) => () => {
+            this.alive = false;
+
+            const PARTICLE_RADIUS = 3;
+            for (let i = 0; i < 12; i++) {
+                const vel = drn === 'x'
+                    ? {
+                        x: -this.xVelocity * randfloat(0.4, 0.6),
+                        y: randfloat(-0.2, 0.2),
+                      }
+                    : {
+                        x: randfloat(-0.2, 0.2),
+                        y: -this.yVelocity * randfloat(0.2, 0.3),
+                      };
+                room.addParticle(new Particle(
+                    this.actor.x + this.actor.width / 2 - PARTICLE_RADIUS,
+                    this.actor.y + this.actor.height / 2 - PARTICLE_RADIUS,
+                    PARTICLE_RADIUS * 2,
+                    PARTICLE_RADIUS * 2,
+                    Math.random() > 0 ? '#674cd3' : '#9e5eff',
+                    vel.x,
+                    vel.y,
+                    140,
+                ));
+            }
+
+            if (drn === 'x') {
+
+            }
+        };
+
         this.yVelocity += GRAVITY * frameDuration;
-        this.actor.moveX(this.xVelocity * frameDuration, () => { this.alive = false }, room.solids);
-        this.actor.moveY(this.yVelocity * frameDuration, () => { this.alive = false }, room.solids);
+        this.actor.moveX(this.xVelocity * frameDuration, wallHit('x'), room.solids);
+        this.actor.moveY(this.yVelocity * frameDuration, wallHit('y'), room.solids);
 
         /** See if we apply damage to parent */
         if (this.struck && this.parent.alive) {
