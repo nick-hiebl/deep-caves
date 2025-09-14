@@ -196,8 +196,6 @@ class SpitBoss_Spit {
             this.actor.width + 2 * OFFSET,
             this.actor.height + 2 * OFFSET,
         );
-        // ctx.fillStyle = 'red';
-        // ctx.fillRect(this.actor.x, this.actor.y, this.actor.width, this.actor.height);
     }
 
     update(frameDuration, room, _playerPosition) {
