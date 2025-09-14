@@ -60,8 +60,8 @@ class Walker extends Enemy {
             && room.solids.every(solid => !solid.isCollidable || solid.isDroppable || !overlaps(solid, spaceSolid));
     }
 
-    applyDamage() {
-        super.applyDamage();
+    applyDamage(box, impulse) {
+        super.applyDamage(box, impulse);
         this.yVelocity -= 0.3;
     }
 }

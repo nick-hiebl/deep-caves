@@ -46,5 +46,9 @@ class PitRoom extends Room {
                 new Solid(ROOM_SCALE_WIDTH - 80, 0, 80, ROOM_SCALE_HEIGHT),
                 new Solid(0, ROOM_SCALE_HEIGHT - 80, ROOM_SCALE_WIDTH, 80),
             );
+
+        this.enemies = [
+            new SpitBoss(780, ROOM_SCALE_HEIGHT - 80),
+        ];
     }
 }

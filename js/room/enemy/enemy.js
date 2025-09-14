@@ -4,8 +4,7 @@ const X_SPEED = 300 / 1000;
 const X_ACCEL = 1 / 1000;
 const Y_ACCEL = 2 / 1000;
 
-const GHOSTY_SPRITE = new Image();
-GHOSTY_SPRITE.src = './img/ghosty.png';
+const GHOSTY_SPRITE = Sprite('./img/ghosty.png');
 
 const ENEMY_WIDTH = 24;
 const ENEMY_HEIGHT = 32;
@@ -91,12 +90,22 @@ class Enemy {
         }
     }
 
-    applyDamage() {
+    applyDamage(_box, impulse) {
         this.hp -= 1;
+
+        this.xVelocity += impulse?.x ?? 0;
+        this.yVelocity += impulse?.y ?? 0;
+
         if (this.hp <= 0) {
             this.alive = false;
         }
 
         this.hurtVisualiser.up();
+    }
+
+    intersects(box) {
+        if (overlaps(box, this.actor)) {
+            return this.actor;
+        }
     }
 }

@@ -22,8 +22,7 @@ const RIGHT_KEY = 'd';
 const JUMP_KEY = ' ';
 const ATTACK_KEY = 'j';
 
-const PLAYER_SPRITE = new Image();
-PLAYER_SPRITE.src = './img/sword_man.png';
+const PLAYER_SPRITE = Sprite('./img/sword_man.png');
 
 const getImageCoordinates = (attacking, facing, hasShield) => {
     let x = 0, y = 0;

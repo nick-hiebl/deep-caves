@@ -1,5 +1,4 @@
-const SWORD_SWOOSH = new Image();
-SWORD_SWOOSH.src = './img/sword_slash.png';
+const SWORD_SWOOSH = Sprite('./img/sword_slash.png');
 
 const ATTACK_HEIGHT = 36;
 const ATTACK_WIDTH = 56;
@@ -86,10 +85,11 @@ class Attack {
         }
         const box = this.getBox(basePosition);
 
-        if (overlaps(box, enemy.actor)) {
-            enemy.xVelocity += this.facing === 'left' ? -KNOCKBACK_AMOUNT : KNOCKBACK_AMOUNT;
+        const hitBox = enemy.intersects(box);
+
+        if (hitBox) {
             this.interactedWith.add(enemy);
-            enemy.applyDamage();
+            enemy.applyDamage(hitBox, { x: this.facing === 'left' ? -KNOCKBACK_AMOUNT : KNOCKBACK_AMOUNT });
         }
     }
 }

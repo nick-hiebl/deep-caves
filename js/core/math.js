@@ -6,6 +6,10 @@ function randint(lo, hi) {
     return Math.floor((hi - lo) * Math.random());
 }
 
+function randfloat(lo, hi) {
+    return lo + Math.random() * (hi - lo);
+}
+
 function overlaps(a, b) {
     if (a.x >= b.x + b.width || b.x >= a.x + a.width) {
         return false;
