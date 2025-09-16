@@ -49,9 +49,9 @@ class GhostBoss {
 
         switch (this.strategy) {
             case 'initialWait':
-                // if (isPointInside(INSIDE_COLLIDER, playerPosition.x, playerPosition.y)) {
-                //     this.initFlee(playerPosition);
-                // }
+                if (isPointInside(INSIDE_COLLIDER, playerPosition.x, playerPosition.y)) {
+                    this.initFlee(playerPosition);
+                }
                 return;
             case 'flee':
                 this.collider.x += this.xVelocity * frameDuration;
@@ -121,7 +121,7 @@ class GhostBoss {
 
     draw(ctx) {
         if (this.hurtVisualiser.check() > 0) {
-            ctx.filter = 'brightness(1000%) saturate(0%)';
+            ctx.filter = 'brightness(10000%) saturate(0%)';
         }
 
         const x = Math.round(this.collider.x);
