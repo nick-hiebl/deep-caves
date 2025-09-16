@@ -33,16 +33,16 @@ class Actor {
                 move -= sign;
 
                 /** Backtrack one step on collision and return */
-                const { isColliding, droppingThroughSolids } = this.collideAt(solids);
+                const { collidingSolid, droppingThroughSolids } = this.collideAt(solids);
 
                 /** If entering a droppable solid horizontally, you fall through it */
                 droppingThroughSolids.forEach(solid => {
                     this.droppingSet.add(solid);
                 });
 
-                if (isColliding) {
+                if (collidingSolid) {
                     this.x -= sign;
-                    onCollide();
+                    onCollide(collidingSolid);
                     break;
                 }
             }
@@ -63,19 +63,19 @@ class Actor {
                 move -= sign;
 
                 /** Backtrack one step on collision and return */
-                let { isColliding, droppingThroughSolids } = this.collideAt(solids);
+                let { collidingSolid, droppingThroughSolids } = this.collideAt(solids);
 
                 /** If moving up or dropping then just mark solids we are dropping through */
                 if ((sign < 0 || this.isDropping) && droppingThroughSolids.length > 0) {
                     droppingThroughSolids.forEach(solid => this.droppingSet.add(solid));
                 } else if (droppingThroughSolids.length > 0) {
                     /** We are falling and not dropping through platforms */
-                    isColliding = true;
+                    collidingSolid = droppingThroughSolids[0];
                 }
 
-                if (isColliding) {
+                if (collidingSolid) {
                     this.y -= sign;
-                    onCollide();
+                    onCollide(collidingSolid);
                     break;
                 }
             }
@@ -103,7 +103,7 @@ class Actor {
     collideAt(solids) {
         const droppingThroughSolids = [];
 
-        const isColliding = solids.some(solid => {
+        const collidingSolid = solids.find(solid => {
             if (!solid.isCollidable) {
                 return false;
             }
@@ -126,7 +126,7 @@ class Actor {
             return true;
         });
 
-        return { isColliding, droppingThroughSolids };
+        return { collidingSolid, droppingThroughSolids };
     }
 
     isRiding(solid) {

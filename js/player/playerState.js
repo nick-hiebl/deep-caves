@@ -126,16 +126,16 @@ class PlayerState {
 
         if (isJumping) {
             const PARTICLE_RADIUS = 2;
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 8; i++) {
                 const relX = randfloat(-1, 1);
                 room.addParticle(new Particle(
-                    this.actor.x + relX * this.actor.width / 2 * 0.3 - PARTICLE_RADIUS,
+                    this.actor.x + (1 + relX) * this.actor.width / 2 * 1 - PARTICLE_RADIUS,
                     this.actor.y + this.actor.height - PARTICLE_RADIUS,
                     PARTICLE_RADIUS * 2,
                     PARTICLE_RADIUS * 2,
                     'white',
                     relX * 0.3,
-                    randfloat(-0.2, 0.2),
+                    (Math.random() < 0.6 ? 1 : -1) * randfloat(0.15, 0.2),
                     140,
                 ));
             }

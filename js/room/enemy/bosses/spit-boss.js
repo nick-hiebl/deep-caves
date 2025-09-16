@@ -198,13 +198,38 @@ class SpitBoss_Spit {
         );
     }
 
+    addParticle(room, origin, velocity) {
+        const PARTICLE_RADIUS = 3;
+
+        room.addParticle(new Particle(
+            origin.x - PARTICLE_RADIUS,
+            origin.y - PARTICLE_RADIUS,
+            PARTICLE_RADIUS * 2,
+            PARTICLE_RADIUS * 2,
+            Math.random() > 0.5 ? '#674cd3' : '#9e5eff',
+            velocity.x,
+            velocity.y,
+            randfloat(120, 200),
+            true,
+        ));
+    }
+
     update(frameDuration, room, _playerPosition) {
         this.hitVisualiser.down(frameDuration);
 
-        const wallHit = (drn) => () => {
+        const wallHit = (drn) => (solid) => {
             this.alive = false;
 
-            const PARTICLE_RADIUS = 3;
+            const origin = drn === 'x'
+                ? {
+                    x: this.xVelocity > 0 ? solid.x : solid.x + solid.width,
+                    y: this.actor.y + this.actor.height / 2,
+                  }
+                : {
+                    x: this.actor.x + this.actor.width / 2,
+                    y: this.yVelocity > 0 ? solid.y : solid.y + solid.height,
+                  };
+
             for (let i = 0; i < 12; i++) {
                 const vel = drn === 'x'
                     ? {
@@ -215,20 +240,8 @@ class SpitBoss_Spit {
                         x: randfloat(-0.2, 0.2),
                         y: -this.yVelocity * randfloat(0.2, 0.3),
                       };
-                room.addParticle(new Particle(
-                    this.actor.x + this.actor.width / 2 - PARTICLE_RADIUS,
-                    this.actor.y + this.actor.height / 2 - PARTICLE_RADIUS,
-                    PARTICLE_RADIUS * 2,
-                    PARTICLE_RADIUS * 2,
-                    Math.random() > 0 ? '#674cd3' : '#9e5eff',
-                    vel.x,
-                    vel.y,
-                    140,
-                ));
-            }
 
-            if (drn === 'x') {
-
+                this.addParticle(room, origin, vel);
             }
         };
 
@@ -242,6 +255,19 @@ class SpitBoss_Spit {
 
             if (hitBox) {
                 this.parent.applyDamage(hitBox);
+
+                const origin = clampPointWithin(rectMidpoint(this.actor), insetRect(hitBox, 16));
+
+                console.log(this.xVelocity, this.yVelocity);
+
+                for (let i = 0; i < 12; i++) {
+                    const vel = {
+                        x: -this.xVelocity * randfloat(0.4, 0.6) + randfloat(-0.2, 0.2),
+                        y: -this.yVelocity * randfloat(0.2, 0.3) + randfloat(-0.2, 0.2),
+                    };
+
+                    this.addParticle(room, origin, vel);
+                }
 
                 this.alive = false;
             }

@@ -1,5 +1,5 @@
 class Particle {
-    constructor(x, y, width, height, color, vX, vY, lifespan) {
+    constructor(x, y, width, height, color, vX, vY, lifespan, gravity = false) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -12,6 +12,8 @@ class Particle {
         this.lifespan = lifespan;
 
         this.alive = true;
+
+        this.affectedByGravity = false;
     }
 
     draw(ctx) {
@@ -22,6 +24,10 @@ class Particle {
     }
 
     update(frameDuration) {
+        if (this.affectedByGravity) {
+            this.yVelocity += frameDuration * GRAVITY;
+        }
+
         this.x += frameDuration * this.xVelocity;
         this.y += frameDuration * this.yVelocity;
 

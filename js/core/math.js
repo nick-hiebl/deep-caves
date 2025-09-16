@@ -39,3 +39,30 @@ function approach(target, current, step) {
         return target;
     }
 }
+
+function clamp(x, lo, hi) {
+    return Math.max(lo, Math.min(x, hi));
+}
+
+function clampPointWithin({ x, y }, rect) {
+    return {
+        x: clamp(x, rect.x, rect.x + rect.width),
+        y: clamp(y, rect.y, rect.y + rect.height),
+    };
+}
+
+function insetRect(rect, insetBy) {
+    return {
+        x: rect.x + insetBy,
+        y: rect.y + insetBy,
+        width: rect.width - 2 * insetBy,
+        height: rect.height - 2 * insetBy,
+    };
+}
+
+function rectMidpoint(rect) {
+    return {
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+    };
+}
