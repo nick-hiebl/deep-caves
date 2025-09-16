@@ -66,3 +66,12 @@ function rectMidpoint(rect) {
         y: rect.y + rect.height / 2,
     };
 }
+
+function normalize({ x, y }, radius) {
+    const magnitude = Math.sqrt(x * x + y * y);
+
+    return {
+        x: x * radius / magnitude,
+        y: y * radius / magnitude,
+    };
+}
