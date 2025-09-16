@@ -96,3 +96,10 @@ function randomPerimeterPoint(rect) {
         };
     }
 }
+
+function randomPointInRect(rect) {
+    return {
+        x: rect.x + randfloat(0, rect.width),
+        y: rect.y + randfloat(0, rect.height),
+    };
+}

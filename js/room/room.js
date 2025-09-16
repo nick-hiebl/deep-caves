@@ -157,14 +157,14 @@ class Room {
             ctx.fillRect(solid.x, solid.y, solid.width, solid.height);
         }
 
-        /** Draw enemies */
-        this.enemies.forEach(enemy => {
-            enemy.draw(ctx);
-        });
-
         /** Draw particles */
         this.particles.forEach(particle => {
             particle.draw(ctx);
+        });
+
+        /** Draw enemies */
+        this.enemies.forEach(enemy => {
+            enemy.draw(ctx);
         });
 
         /** Draw player */

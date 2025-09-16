@@ -38,14 +38,16 @@ class GhostBoss {
         };
 
         this.hurtVisualiser = incDecLatch(1, 250);
+        this.particleCooldown = incDecLatch(1, 40);
 
         this.strategy = 'initialWait';
         this.isStrategyComplete = false;
         this.cooldown = incDecLatch(500, 1);
     }
 
-    update(frameDuration, _room, playerPosition) {
+    update(frameDuration, room, playerPosition) {
         this.hurtVisualiser.down(frameDuration);
+        this.particleCooldown.down(frameDuration);
 
         switch (this.strategy) {
             case 'initialWait':
@@ -61,6 +63,8 @@ class GhostBoss {
                 if (!overlaps(SCREEN_COLLIDER, this.collider)) {
                     this.initCharge(playerPosition);
                 }
+
+                this.addParticle(room);
                 return;
             case 'charge':
                 const speedMod = 0.8 + Math.min(1.2, this.distFromTarget() / 600);
@@ -70,9 +74,30 @@ class GhostBoss {
                 if (this.distFromTarget() <= 10) {
                     this.initFlee(playerPosition);
                 }
+
+                this.addParticle(room);
                 return;
             case 'wait':
                 return;
+        }
+    }
+
+    addParticle(room) {
+        if (this.particleCooldown.check() <= 0) {
+            const pPos = randomPointInRect(this.collider);
+            const RADIUS = 4;
+            room.addParticle(new Particle(
+                pPos.x - RADIUS / 2,
+                pPos.y - RADIUS / 2,
+                4,
+                4,
+                'white',
+                this.xVelocity * 0.1,
+                this.yVelocity * 0.1,
+                360,
+                true,
+            ));
+            this.particleCooldown.up(1);
         }
     }
 
