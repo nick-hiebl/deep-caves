@@ -205,7 +205,8 @@ class Room {
         this.enemies = this.enemies.filter(enemy => enemy.alive);
 
         if (!this.allEnemiesCleared && this.enemies.length === 0) {
-            this.solids = this.solids.filter(solid => !solid.blocker);
+            this.onAllEnemiesCleared();
+            this.allEnemiesCleared = true;
         }
 
         this.validateLeavingRoom(onRoomChange);
@@ -238,6 +239,10 @@ class Room {
             doors.bottom[relevantGap] = true;
             onRoomChange(this.x, this.y - 1, doors);
         }
+    }
+
+    onAllEnemiesCleared() {
+        this.solids = this.solids.filter(solid => !solid.blocker);
     }
 
     setExternalMatchingDoorways(doors) {

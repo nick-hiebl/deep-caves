@@ -45,10 +45,21 @@ class PitRoom extends Room {
                 new Solid(0, 0, 80, ROOM_SCALE_HEIGHT),
                 new Solid(ROOM_SCALE_WIDTH - 80, 0, 80, ROOM_SCALE_HEIGHT),
                 new Solid(0, ROOM_SCALE_HEIGHT - 80, ROOM_SCALE_WIDTH, 80),
+                new Solid(80, 160, 240, 10, { isDroppable: true }),
             );
 
         this.enemies = [
             new SpitBoss(780, ROOM_SCALE_HEIGHT - 80),
         ];
+    }
+
+    onAllEnemiesCleared() {
+        super.onAllEnemiesCleared();
+
+        this.solids = this.solids.concat(
+            ...[320, 480].map(y =>
+                new Solid(80, y, 240, 10, { isDroppable: true }),
+            ),
+        );
     }
 }
