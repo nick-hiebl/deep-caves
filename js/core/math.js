@@ -75,3 +75,24 @@ function normalize({ x, y }, radius) {
         y: y * radius / magnitude,
     };
 }
+
+function distance({ x, y }, { x: x1, y: y1 }) {
+    return Math.sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
+}
+
+function randomPerimeterPoint(rect) {
+    const halfPerimeter = rect.width + rect.height;
+    const pos = randfloat(0, halfPerimeter);
+
+    if (pos < rect.width) {
+        return {
+            x: rect.x + pos,
+            y: randint(0, 2) ? rect.y : rect.y + rect.height,
+        };
+    } else {
+        return {
+            x: randint(0, 2) ? rect.x : rect.x + rect.width,
+            y: rect.y + (pos - rect.width),
+        };
+    }
+}

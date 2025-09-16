@@ -54,18 +54,20 @@ class GhostBoss {
                 }
                 return;
             case 'flee':
-                this.collider.x += this.xVelocity * frameDuration;
-                this.collider.y += this.yVelocity * frameDuration;
+                const fleeSpeedMod = 0.8 + Math.min(1.2, this.distFromStart() / 600);
+                this.collider.x += this.xVelocity * frameDuration * fleeSpeedMod;
+                this.collider.y += this.yVelocity * frameDuration * fleeSpeedMod;
 
                 if (!overlaps(SCREEN_COLLIDER, this.collider)) {
                     this.initCharge(playerPosition);
                 }
                 return;
             case 'charge':
-                this.collider.x += this.xVelocity * frameDuration;
-                this.collider.y += this.yVelocity * frameDuration;
+                const speedMod = 0.8 + Math.min(1.2, this.distFromTarget() / 600);
+                this.collider.x += this.xVelocity * frameDuration * speedMod;
+                this.collider.y += this.yVelocity * frameDuration * speedMod;
 
-                if (this.isDoneCharging()) {
+                if (this.distFromTarget() <= 10) {
                     this.initFlee(playerPosition);
                 }
                 return;
@@ -77,45 +79,47 @@ class GhostBoss {
     initFlee(playerPosition) {
         this.strategy = 'flee';
 
-        const myMidpoint = rectMidpoint(this.collider);
+        const startingPoint = rectMidpoint(this.collider);
 
         const direction = {
-            x: playerPosition.x - myMidpoint.x,
-            y: playerPosition.y - myMidpoint.y,
+            x: playerPosition.x - startingPoint.x,
+            y: playerPosition.y - startingPoint.y,
         };
         const speed = normalize(direction, GHOST_BOSS_SPEED);
 
         this.xVelocity = speed.x;
         this.yVelocity = speed.y;
+
+        this.distFromStart = () => {
+            return distance(rectMidpoint(this.collider), startingPoint);
+        }
     }
 
     initCharge(playerPosition) {
         this.strategy = 'charge';
 
-        const myMidpoint = rectMidpoint(this.collider);
+        /** Choose new starting point */
+        const startingPoint = randomPerimeterPoint(SCREEN_COLLIDER);
+
+        this.collider.x = startingPoint.x - GHOST_COLLIDER_WIDTH / 2;
+        this.collider.y = startingPoint.y - GHOST_COLLIDER_WIDTH / 2;
 
         const px = playerPosition.x;
         const py = playerPosition.y;
 
         const direction = {
-            x: px - myMidpoint.x,
-            y: py - myMidpoint.y,
+            x: px - startingPoint.x,
+            y: py - startingPoint.y,
         };
         const speed = normalize(direction, GHOST_BOSS_SPEED);
 
         this.xVelocity = speed.x;
         this.yVelocity = speed.y;
 
-        this.isDoneCharging = () => {
+        this.distFromTarget = () => {
             const pos = rectMidpoint(this.collider);
 
-            return speed.x > 0
-                ? pos.x > px
-                : speed.x < 0
-                ? pos.x < px
-                : speed.y > 0
-                ? pos.y > py
-                : pos.y < py;
+            return distance(pos, { x: px, y: py });
         };
     }
 
