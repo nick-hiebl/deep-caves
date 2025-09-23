@@ -1,0 +1,17 @@
+{
+  "name": "deep-caves",
+  "version": "1.0.0",
+  "description": "Game with random room exploration initiated by the player",
+  "main": "js/main.ts",
+  "dependencies": {
+    "esbuild": "^0.25.10",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "build": "esbuild js/main.ts --bundle --minify --sourcemap --outfile=build/index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

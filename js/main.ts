@@ -1,7 +1,19 @@
+import 
+
 function main() {
     /** Page setup */
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+
+    if (!canvas) {
+        return;
+    }
+
     const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+        return;
+    }
+
     ctx.imageSmoothingEnabled = false;
 
     /** Game init */

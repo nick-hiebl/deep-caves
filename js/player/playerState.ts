@@ -39,8 +39,14 @@ const getImageCoordinates = (attacking, facing, hasShield) => {
     return { x, y };
 };
 
-class PlayerState {
-    constructor(x, y) {
+export class PlayerState {
+    lastState: { x: number; y: number };
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+
+    constructor(x: number, y: number) {
         x = Math.round(x);
         y = Math.round(y);
 

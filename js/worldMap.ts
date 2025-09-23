@@ -10,7 +10,17 @@ const CURRENT_ROOM_BORDER = 2;
 /** Amount to jump canvas size up by when re-drawing. */
 const INCREMENT_BY = 4;
 
-class WorldMap {
+export class WorldMap {
+    lastRoomIndex: { x: number; y: number };
+    map: Record<string, Room>;
+
+    x: number;
+    y: number;
+    currentIndex: string;
+
+    minX: number;
+    minY: number;
+
     constructor() {
         this.lastRoomIndex = { x: 0, y: 0 };
 

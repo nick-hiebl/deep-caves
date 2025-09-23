@@ -5,7 +5,9 @@ const MAP_KEY = 'Tab';
 const MAP_INSET = 64;
 const MAP_BORDER = 4;
 
-class CaveWorld {
+export class CaveWorld {
+    worldMap: WorldMap;
+
     constructor() {
         this.worldMap = new WorldMap();
 

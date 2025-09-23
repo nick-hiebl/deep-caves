@@ -17,8 +17,11 @@ const GAPS = {
     right: [ROOM_SCALE_WIDTH - 280, ROOM_SCALE_WIDTH - 80],
 };
 
-const VERTICAL_DOOR_KEYS = ['left', 'center', 'right'];
-const HORIZONTAL_DOOR_KEYS = ['high', 'medium', 'low'];
+export type VerticalDoorKey = 'left' | 'center' | 'right';
+export type HorizontalDoorKey = 'high' | 'medium' | 'low';
+
+const VERTICAL_DOOR_KEYS: VerticalDoorKey[] = ['left', 'center', 'right'];
+const HORIZONTAL_DOOR_KEYS: HorizontalDoorKey[] = ['high', 'medium', 'low'];
 
 const OPPOSITE_FACE = {
     left: 'right',
@@ -27,7 +30,16 @@ const OPPOSITE_FACE = {
     bottom: 'top',
 };
 
-class Room {
+export type Edge = 'left' | 'right' | 'top' | 'bottom';
+
+export type DoorsMap = {
+    left: Partial<Record<HorizontalDoorKey, boolean | undefined>>;
+    right: Partial<Record<HorizontalDoorKey, boolean | undefined>>;
+    top: Partial<Record<VerticalDoorKey, boolean | undefined>>;
+    bottom: Partial<Record<VerticalDoorKey, boolean | undefined>>;
+}
+
+export class Room {
     getDoorwayChance() {
         return 0.5;
     }
@@ -58,7 +70,26 @@ class Room {
         });
     }
 
-    constructor(x, y, width, height, color = 'blue', setDoors = {}) {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+
+    color: string;
+
+    blockersLocked: boolean;
+    allEnemiesCleared: boolean;
+
+    doors: DoorsMap;
+
+    enemies: never[];
+    solids: never[];
+    interactives: never[];
+    particles: never[];
+
+    playerState: PlayerState;
+
+    constructor(x: number, y: number, width: number, height: number, color = 'blue', setDoors: Partial<DoorsMap> | undefined = {}) {
         /** Room setup */
         this.x = x;
         this.y = y;
