@@ -293,8 +293,6 @@ class SpitBoss_Spit implements EnemyInterface {
 
                 const origin = clampPointWithin(rectMidpoint(this.actor), insetRect(hitBox, 16));
 
-                console.log(this.xVelocity, this.yVelocity);
-
                 for (let i = 0; i < 12; i++) {
                     const vel = {
                         x: -this.xVelocity * randfloat(0.4, 0.6) + randfloat(-0.2, 0.2),
