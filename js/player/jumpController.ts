@@ -6,7 +6,15 @@ const Y_VELOCITY_CUTOFF = -0.5;
 /** Physics utils */
 const COYOTE_DURATION = 100;
 
-class JumpController {
+export const JUMP_KEY = ' ';
+
+export class JumpController {
+    isGrounded: boolean;
+    coyoteTime: number;
+    timeSinceJumpPress: number;
+    isJumpKeyDown: boolean;
+    stillHoldingJump: boolean;
+
     constructor() {
         this.isGrounded = false;
         this.coyoteTime = 0;
@@ -15,7 +23,7 @@ class JumpController {
         this.stillHoldingJump = false;
     }
 
-    update(keyboardState, frameDuration, yVelocity) {
+    update(keyboardState: Record<string, boolean>, frameDuration: number, yVelocity: number) {
         this.coyoteTime -= frameDuration;
 
         if (keyboardState[JUMP_KEY]) {
@@ -44,7 +52,7 @@ class JumpController {
         return { isJumping, yAcceleration: this.getGravity(yVelocity) };
     }
 
-    getGravity(yVelocity) {
+    getGravity(yVelocity: number) {
         if (yVelocity > Y_VELOCITY_CUTOFF || !this.stillHoldingJump) {
             return HIGH_GRAVITY;
         }
@@ -52,7 +60,7 @@ class JumpController {
         return GRAVITY;
     }
 
-    groundedCheck(nowGrounded, nowJumping) {
+    groundedCheck(nowGrounded: boolean, nowJumping: boolean) {
         if (this.isGrounded && !nowGrounded && !nowJumping) {
             this.coyoteTime = COYOTE_DURATION;
         } else if (nowGrounded) {

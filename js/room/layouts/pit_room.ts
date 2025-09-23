@@ -1,9 +1,14 @@
-class PitRoom extends Room {
+import { Solid } from '../../core/solid';
+import { SpitBoss } from '../enemy/bosses/spit-boss';
+import { Room, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, type DoorsMap } from '../room';
+import { generateRoomForDoors } from '../room-utils';
+
+export class PitRoom extends Room {
     getDoorwayChance() {
         return 0.1;
     }
 
-    static getDoorArrangement() {
+    static getDoorArrangement(): DoorsMap {
         return {
             left: {
                 high: false,
@@ -16,9 +21,9 @@ class PitRoom extends Room {
                 low: false,
             },
             bottom: {
-                high: false,
-                medium: false,
-                low: false,
+                left: false,
+                center: false,
+                right: false,
             },
             top: {
                 left: false,
@@ -28,7 +33,7 @@ class PitRoom extends Room {
         };
     }
 
-    static isValidAt(x, y) {
+    static isValidAt(_x: number, _y: number) {
         return true;
         // return y >= 3 && x !== 0;
     }

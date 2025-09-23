@@ -1,4 +1,4 @@
-type BooleanLatch = (newState: boolean, handlers: { onLock: () => void; onRelease: () => void }) => void;
+export type BooleanLatch = (newState: boolean, handlers: { onLock?: () => void; onRelease?: () => void }) => void;
 
 export const latch = (initialState: boolean): BooleanLatch => {
     let state = initialState;
@@ -17,9 +17,9 @@ export const latch = (initialState: boolean): BooleanLatch => {
     };
 };
 
-type IncDecLatch = {
-    up: (by: number) => void;
-    down: (by: number) => void;
+export type IncDecLatch = {
+    up: (by?: number) => void;
+    down: (by?: number) => void;
     check: () => number;
 };
 

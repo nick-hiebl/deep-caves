@@ -1,5 +1,14 @@
-class BufferedThrottledInputController {
-    constructor(preBufferDuration, coolDown, activeDuration) {
+export class BufferedThrottledInputController {
+    preBufferDuration: number;
+    coolDown: number;
+    activeDuration: number;
+
+    isPressed: boolean;
+    timeSinceUnusedPress: number | undefined;
+    isActive: boolean;
+    timeSinceActivation: number;
+
+    constructor(preBufferDuration: number, coolDown: number, activeDuration: number) {
         /** Saved config */
         this.preBufferDuration = preBufferDuration;
         this.coolDown = coolDown;
@@ -12,7 +21,7 @@ class BufferedThrottledInputController {
         this.timeSinceActivation = Math.max(coolDown, activeDuration);
     }
 
-    update(frameDuration, isPressed, onActivation) {
+    update(frameDuration: number, isPressed: boolean | undefined, onActivation: () => void) {
         if (!this.isPressed) {
             if (isPressed) {
                 this.timeSinceUnusedPress = 0;
@@ -21,11 +30,11 @@ class BufferedThrottledInputController {
             }
         } else {
             if (isPressed) {
-                this.timeSinceUnusedPress += frameDuration;
+                this.timeSinceUnusedPress = (this.timeSinceUnusedPress ?? 0) + frameDuration;
             }
         }
 
-        this.isPressed = isPressed;
+        this.isPressed = !!isPressed;
 
         if (this.timeSinceActivation < this.activeDuration || this.timeSinceActivation < this.coolDown) {
             this.timeSinceActivation += frameDuration;
@@ -35,7 +44,9 @@ class BufferedThrottledInputController {
             this.isActive = false;
         }
 
-        if (!this.isActive && this.timeSinceUnusedPress < this.preBufferDuration && this.timeSinceActivation >= this.coolDown) {
+        const isPressReady = this.timeSinceUnusedPress !== undefined && this.timeSinceUnusedPress < this.preBufferDuration;
+
+        if (!this.isActive && isPressReady && this.timeSinceActivation >= this.coolDown) {
             this.isActive = true;
             this.timeSinceActivation = 0;
             this.timeSinceUnusedPress = undefined;

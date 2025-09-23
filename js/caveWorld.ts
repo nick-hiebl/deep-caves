@@ -1,4 +1,7 @@
-import { latch } from './core/latch';
+import { latch, type BooleanLatch } from './core/latch';
+import { isPointInside, type Vector } from './core/math';
+import { ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, type DoorsMap, type Room } from './room/room';
+import { WorldMap } from './worldMap';
 
 const FRAME_DURATION = 2;
 
@@ -9,6 +12,17 @@ const MAP_BORDER = 4;
 
 export class CaveWorld {
     worldMap: WorldMap;
+
+    lastFrameTime: number;
+    unprocessedTime: number;
+
+    pausedFor: 'Tab' | 'choices' | undefined;
+    choosing: boolean;
+    choices: Room[];
+
+    tabLatch: BooleanLatch;
+    mouseOverChoiceIndex: number;
+    firstTickInNewRoom: boolean;
 
     constructor() {
         this.worldMap = new WorldMap();
@@ -28,9 +42,9 @@ export class CaveWorld {
     }
 
     /** Update loop */
-    update(ctx, canvas, mousePosition, keyboardState) {
+    update(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, mousePosition: Vector | undefined, keyboardState: Record<string, boolean>) {
         this.tabLatch(
-            keyboardState[MAP_KEY],
+            !!keyboardState[MAP_KEY],
             {
                 onLock: () => {
                     if (this.pausedFor === 'Tab') {
@@ -86,7 +100,7 @@ export class CaveWorld {
         this.draw(ctx, canvas, mousePosition, interpolationFactor);
     }
 
-    drawMap(ctx, canvas) {
+    drawMap(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         ctx.fillStyle = '#00000099';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -99,12 +113,12 @@ export class CaveWorld {
         this.worldMap.drawMapToScreen(ctx, MAP_INSET, MAP_INSET, canvas.height - MAP_INSET * 2, canvas.height - MAP_INSET * 2);
     }
 
-    click(_canvas, _mousePosition) {
+    click(_canvas: HTMLCanvasElement, _mousePosition: Vector) {
         const choosing = this.pausedFor === 'choices' && this.choices.length > 0;
         const mousingOverValidOption = this.mouseOverChoiceIndex >= 0 && this.mouseOverChoiceIndex < this.choices.length;
 
         if (choosing && mousingOverValidOption) {
-            const newRoom = this.choices[this.mouseOverChoiceIndex];
+            const newRoom = this.choices[this.mouseOverChoiceIndex]!;
             this.worldMap.addRoom(newRoom);
 
             const lastRoom = this.worldMap.getPreviousRoom();
@@ -118,7 +132,7 @@ export class CaveWorld {
         }
     }
 
-    transferPlayerPosition(lastRoom, newRoom) {
+    transferPlayerPosition(lastRoom: Room, newRoom: Room) {
         newRoom.playerState.xVelocity = lastRoom.playerState.xVelocity;
         /** Cap player y velocity when falling room to room */
         newRoom.playerState.yVelocity = Math.min(lastRoom.playerState.yVelocity, 0.1);
@@ -139,12 +153,12 @@ export class CaveWorld {
         newRoom.playerState.facing = lastRoom.playerState.facing;
     }
 
-    simulateFrame(mousePosition, keyboardState) {
+    simulateFrame(mousePosition: Vector | undefined, keyboardState: Record<string, boolean>) {
         const room = this.worldMap.getCurrentRoom();
         room.update(mousePosition, keyboardState, FRAME_DURATION, this.onRoomChange.bind(this));
     }
 
-    onRoomChange(x, y, doors) {
+    onRoomChange(x: number, y: number, doors: Partial<DoorsMap>) {
         if (this.worldMap.hasRoom(x, y)) {
             this.worldMap.enterRoom(x, y);
 
@@ -156,7 +170,7 @@ export class CaveWorld {
         }
     }
 
-    draw(ctx, canvas, mousePosition, interpolationFactor) {
+    draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, mousePosition: Vector | undefined, interpolationFactor: number) {
         const room = this.worldMap.getCurrentRoom();
 
         if (room) {
@@ -164,11 +178,11 @@ export class CaveWorld {
         }
     }
 
-    drawOptions(ctx, canvas, mousePosition) {
+    drawOptions(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, mousePosition: Vector | undefined) {
         this.mouseOverChoiceIndex = -1;
 
         for (let i = 0; i < this.choices.length; i++) {
-            const roomChoice = this.choices[i];
+            const roomChoice = this.choices[i]!;
 
             const left = canvas.height;
             const right = canvas.width;
@@ -198,7 +212,7 @@ export class CaveWorld {
 
             ctx.translate(-ROOM_SCALE_WIDTH / 2, -ROOM_SCALE_HEIGHT / 2);
 
-            roomChoice.drawForMap(ctx, canvas);
+            roomChoice.drawForMap(ctx);
 
             ctx.restore();
         }

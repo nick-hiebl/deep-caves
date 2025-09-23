@@ -1,3 +1,12 @@
+import { DRAW_FRAME_MARKERS } from '../../constants';
+import { Actor } from '../../core/actor';
+import { incDecLatch, type IncDecLatch } from '../../core/latch';
+import { approach, overlaps, type Rect, type Vector } from '../../core/math';
+import { Sprite } from '../../core/sprite';
+import type { Room } from '../room';
+
+import type { EnemyInterface } from './interface';
+
 const ENEMY_RADIUS = 24;
 
 const X_SPEED = 300 / 1000;
@@ -10,15 +19,26 @@ const ENEMY_WIDTH = 24;
 const ENEMY_HEIGHT = 32;
 const VISUAL_SCALE = 2;
 
-class Enemy {
-    constructor(x, y) {
-        this.width = ENEMY_WIDTH * VISUAL_SCALE;
-        this.height = ENEMY_HEIGHT * VISUAL_SCALE;
+export class Enemy implements EnemyInterface {
+    xVelocity: number;
+    yVelocity: number;
 
+    actor: Actor;
+
+    hp: number;
+    alive: boolean;
+
+    facing: 'left' | 'right';
+
+    isNonPhysical: boolean;
+
+    hurtVisualiser: IncDecLatch;
+
+    constructor(x: number, y: number) {
         this.xVelocity = 0;
         this.yVelocity = 0;
 
-        this.actor = new Actor(x, y, this.width, this.height);
+        this.actor = new Actor(x, y, ENEMY_WIDTH * VISUAL_SCALE, ENEMY_HEIGHT * VISUAL_SCALE);
 
         this.hp = 3;
         this.alive = true;
@@ -30,7 +50,7 @@ class Enemy {
         this.hurtVisualiser = incDecLatch(1, 250);
     }
 
-    draw(ctx) {
+    draw(ctx: CanvasRenderingContext2D) {
         if (this.hurtVisualiser.check() > 0) {
             ctx.filter = 'brightness(1000%) saturate(0%)';
         }
@@ -53,7 +73,7 @@ class Enemy {
         }
     }
 
-    update(frameDuration, room, playerPosition) {
+    update(frameDuration: number, room: Room, playerPosition: { x: number; y: number }) {
         this.updateVelocities(frameDuration, room, playerPosition);
 
         if (this.isNonPhysical) {
@@ -67,30 +87,30 @@ class Enemy {
         this.hurtVisualiser.down(frameDuration);
     }
 
-    updateVelocities(_frameDuration, _room, playerPosition) {
+    updateVelocities(frameDuration: number, _room: Room, playerPosition: Vector) {
         const myMidpoint = this.actor.getMidpoint();
 
         if (playerPosition) {
             if (playerPosition.x < myMidpoint.x) {
-                this.xVelocity = approach(-X_SPEED, this.xVelocity, X_ACCEL * FRAME_DURATION);
+                this.xVelocity = approach(-X_SPEED, this.xVelocity, X_ACCEL * frameDuration);
 
                 this.facing = 'left';
             } else {
-                this.xVelocity = approach(X_SPEED, this.xVelocity, X_ACCEL * FRAME_DURATION);
+                this.xVelocity = approach(X_SPEED, this.xVelocity, X_ACCEL * frameDuration);
 
                 this.facing = 'right';
             }
             if (playerPosition.y < myMidpoint.y) {
-                this.yVelocity = approach(-X_SPEED, this.yVelocity, Y_ACCEL * FRAME_DURATION);
+                this.yVelocity = approach(-X_SPEED, this.yVelocity, Y_ACCEL * frameDuration);
             } else {
-                this.yVelocity = approach(X_SPEED, this.yVelocity, Y_ACCEL * FRAME_DURATION);
+                this.yVelocity = approach(X_SPEED, this.yVelocity, Y_ACCEL * frameDuration);
             }
         } else {
             this.facing = this.xVelocity < 0 ? 'left' : 'right';
         }
     }
 
-    applyDamage(_box, impulse) {
+    applyDamage(_box: Rect, impulse: Partial<Vector>) {
         this.hp -= 1;
 
         this.xVelocity += impulse?.x ?? 0;
@@ -103,7 +123,7 @@ class Enemy {
         this.hurtVisualiser.up();
     }
 
-    intersects(box) {
+    intersects(box: Rect) {
         if (overlaps(box, this.actor)) {
             return this.actor;
         }

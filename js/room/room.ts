@@ -1,13 +1,21 @@
-const WALL_THICKNESS = 40;
+import { overlaps, type Vector } from '../core/math';
+import type { Solid } from '../core/solid';
+import { PlayerState } from '../player/playerState';
+import { Enemy } from './enemy/enemy';
+import type { EnemyInterface } from './enemy/interface';
+import { Walker } from './enemy/walker';
+import { MovingPlatform } from './movingPlatform';
+import type { Particle } from './particle';
+import { generateRoomForDoors, getDoorBlockingSolids } from './room-utils';
 
-const ROOM_SCALE_WIDTH = 1280;
-const ROOM_SCALE_HEIGHT = 720;
+export const WALL_THICKNESS = 40;
 
-const GAP_SIZE = WALL_THICKNESS * 6;
+export const ROOM_SCALE_WIDTH = 1280;
+export const ROOM_SCALE_HEIGHT = 720;
 
-const EPSILON = 0.01;
+export const GAP_SIZE = WALL_THICKNESS * 6;
 
-const GAPS = {
+export const GAPS: Record<VerticalDoorKey | HorizontalDoorKey, [number, number]> = {
     high: [120, 240],
     medium: [ROOM_SCALE_HEIGHT / 2 - 40, ROOM_SCALE_HEIGHT / 2 + 80],
     low: [ROOM_SCALE_HEIGHT - 160, ROOM_SCALE_HEIGHT - 40],
@@ -39,12 +47,19 @@ export type DoorsMap = {
     bottom: Partial<Record<VerticalDoorKey, boolean | undefined>>;
 }
 
+export type SemiDoorsMap = {
+    left: Partial<Record<HorizontalDoorKey, boolean | undefined>> | undefined;
+    right: Partial<Record<HorizontalDoorKey, boolean | undefined>> | undefined;
+    top: Partial<Record<VerticalDoorKey, boolean | undefined>> | undefined;
+    bottom: Partial<Record<VerticalDoorKey, boolean | undefined>> | undefined;
+};
+
 export class Room {
     getDoorwayChance() {
         return 0.5;
     }
 
-    static getDoorArrangement() {
+    static getDoorArrangement(): DoorsMap {
         return {
             top: {},
             bottom: {},
@@ -53,12 +68,12 @@ export class Room {
         };
     }
 
-    static isValidAt(_x, _y) {
+    static isValidAt(_x: number, _y: number) {
         return true;
     }
 
     /** Default room constructor works for any door arrangement */
-    static areDoorsOk(setDoors = {}) {
+    static areDoorsOk(setDoors: DoorsMap) {
         const arr = this.getDoorArrangement();
 
         return HORIZONTAL_DOOR_KEYS.every(key => {
@@ -82,10 +97,10 @@ export class Room {
 
     doors: DoorsMap;
 
-    enemies: never[];
-    solids: never[];
-    interactives: never[];
-    particles: never[];
+    enemies: EnemyInterface[];
+    solids: Solid[];
+    interactives: MovingPlatform[];
+    particles: Particle[];
 
     playerState: PlayerState;
 
@@ -139,7 +154,7 @@ export class Room {
 
     /** Randomise un-specified doors */
     configureAllDoors() {
-        const arr = this.constructor.getDoorArrangement();
+        const arr = Room.getDoorArrangement();
         const odds = this.getDoorwayChance();
 
         HORIZONTAL_DOOR_KEYS.forEach(key => {
@@ -174,7 +189,7 @@ export class Room {
         ];
     }
 
-    draw(ctx, canvas, mousePosition, interpolationFactor) {
+    draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, mousePosition: Vector | undefined, interpolationFactor: number) {
         /** Blank background */
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -203,7 +218,7 @@ export class Room {
         this.playerState.draw(ctx, canvas, mousePosition, interpolationFactor);
     }
 
-    update(mousePosition, keyboardState, frameDuration, onRoomChange) {
+    update(mousePosition: Vector | undefined, keyboardState: Record<string, boolean>, frameDuration: number, onRoomChange: (x: number, y: number, doors: Partial<DoorsMap>) => void) {
         if (!this.blockersLocked) {
             if (this.solids.some(solid => solid.blocker && overlaps(this.playerState.actor, solid))) {
                 // Not yet
@@ -243,31 +258,31 @@ export class Room {
         this.validateLeavingRoom(onRoomChange);
     }
 
-    validateLeavingRoom(onRoomChange) {
+    validateLeavingRoom(onRoomChange: (x: number, y: number, doors: Partial<DoorsMap>) => void) {
         const playerMidpoint = this.playerState.actor.getMidpoint();
         if (playerMidpoint.x > ROOM_SCALE_WIDTH) {
-            const doors = { left: {} };
-            const relevantGap = ['high', 'medium', 'low']
+            const doors: Pick<DoorsMap, 'left'> = { left: {} };
+            const relevantGap = (['high', 'medium', 'low'] as const)
                 .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
-            doors.left[relevantGap] = true;
+            if (relevantGap) doors.left[relevantGap] = true;
             onRoomChange(this.x + 1, this.y, doors);
         } else if (playerMidpoint.x < 0) {
-            const doors = { right: {} };
-            const relevantGap = ['high', 'medium', 'low']
+            const doors: Pick<DoorsMap, 'right'> = { right: {} };
+            const relevantGap = (['high', 'medium', 'low'] as const)
                 .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
-            doors.right[relevantGap] = true;
+            if (relevantGap) doors.right[relevantGap] = true;
             onRoomChange(this.x - 1, this.y, doors);
         } else if (playerMidpoint.y > ROOM_SCALE_HEIGHT) {
-            const doors = { top: {} };
-            const relevantGap = ['left', 'center', 'right']
+            const doors: Pick<DoorsMap, 'top'> = { top: {} };
+            const relevantGap = (['left', 'center', 'right'] as const)
                 .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
-            doors.top[relevantGap] = true;
+            if (relevantGap) doors.top[relevantGap] = true;
             onRoomChange(this.x, this.y + 1, doors);
         } else if (playerMidpoint.y < 0) {
-            const doors = { bottom: {} };
-            const relevantGap = ['left', 'center', 'right']
+            const doors: Pick<DoorsMap, 'bottom'> = { bottom: {} };
+            const relevantGap = (['left', 'center', 'right'] as const)
                 .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
-            doors.bottom[relevantGap] = true;
+            if (relevantGap) doors.bottom[relevantGap] = true;
             onRoomChange(this.x, this.y - 1, doors);
         }
     }
@@ -276,14 +291,31 @@ export class Room {
         this.solids = this.solids.filter(solid => !solid.blocker);
     }
 
-    setExternalMatchingDoorways(doors) {
-        const doorsToBlock = {};
+    setExternalMatchingDoorways(doors: Partial<SemiDoorsMap>) {
+        const doorsToBlock: Partial<DoorsMap> = {};
 
-        for (const face in doors) {
-            for (const doorway in doors[face]) {
-                if (doors[face][doorway] === false && this.doors[face][doorway] === true) {
-                    doorsToBlock[face] = doorsToBlock[face] ?? {};
-                    doorsToBlock[face][doorway] = true;
+        for (const _face in doors) {
+            const face = _face as keyof DoorsMap;
+
+            for (const _doorway in doors[face]) {
+                const doorway = face === 'left' || face === 'right'
+                    ? _doorway as HorizontalDoorKey
+                    : _doorway as VerticalDoorKey;
+
+                if (face === 'left' || face === 'right') {
+                    const doorway = _doorway as HorizontalDoorKey;
+
+                    if (doors[face][doorway] === false && this.doors[face][doorway] === true) {
+                        doorsToBlock[face] = doorsToBlock[face] ?? {};
+                        doorsToBlock[face][doorway] = true;
+                    }
+                } else {
+                    const doorway = _doorway as VerticalDoorKey;
+
+                    if (doors[face][doorway] === false && this.doors[face][doorway] === true) {
+                        doorsToBlock[face] = doorsToBlock[face] ?? {};
+                        doorsToBlock[face][doorway] = true;
+                    }
                 }
             }
         }
@@ -294,7 +326,7 @@ export class Room {
         }));
     }
 
-    drawForMap(mapCtx) {
+    drawForMap(mapCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         mapCtx.fillStyle = this.color;
 
         for (const solid of this.solids) {
@@ -305,7 +337,7 @@ export class Room {
         }
     }
 
-    addParticle(particle) {
+    addParticle(particle: Particle) {
         this.particles.push(particle);
     }
 }

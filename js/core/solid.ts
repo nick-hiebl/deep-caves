@@ -1,7 +1,7 @@
 import type { Actor } from './actor';
 import { overlaps } from './math';
 
-type SolidConfig = {
+export type SolidConfig = {
     isDroppable?: boolean;
 };
 
@@ -13,9 +13,12 @@ export class Solid {
 
     isCollidable: boolean;
     isDroppable: boolean;
+    color: string | undefined;
 
     private xRemainder: number;
     private yRemainder: number;
+
+    blocker: boolean;
 
     constructor(x: number, y: number, width: number, height: number, config: SolidConfig = {}) {
         this.x = x;
@@ -25,6 +28,7 @@ export class Solid {
 
         this.isCollidable = true;
         this.isDroppable = config.isDroppable ?? false;
+        this.blocker = false;
 
         this.xRemainder = 0;
         this.yRemainder = 0;

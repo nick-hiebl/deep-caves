@@ -1,3 +1,11 @@
+import { randint } from './core/math';
+import { GhostRoom } from './room/layouts/ghost_room';
+import { HRoom } from './room/layouts/h_room';
+import { LRoom } from './room/layouts/l_room';
+import { PitRoom } from './room/layouts/pit_room';
+import { TRoom } from './room/layouts/t_room';
+import { Room, type DoorsMap } from './room/room';
+
 const MAP_ROOM_WIDTH = 128;
 const MAP_ROOM_HEIGHT = 72;
 const DEFAULT_MAP_WIDTH = 9;
@@ -21,6 +29,9 @@ export class WorldMap {
     minX: number;
     minY: number;
 
+    canvas: OffscreenCanvas;
+    ctx: OffscreenCanvasRenderingContext2D;
+
     constructor() {
         this.lastRoomIndex = { x: 0, y: 0 };
 
@@ -36,20 +47,37 @@ export class WorldMap {
 
         this.map[this.index(0, 0)] = room;
 
-        this.createNewCanvas(0, 0, 0, 0);
+        const cols = Math.max(DEFAULT_MAP_WIDTH);
+        const rows = Math.max(DEFAULT_MAP_HEIGHT);
+
+        this.canvas = new OffscreenCanvas(cols * MAP_ROOM_WIDTH, rows * MAP_ROOM_HEIGHT);
+        const ctx = this.canvas.getContext('2d');
+
+        if (!ctx) {
+            throw Error('Could not construct canvas');
+        }
+
+        this.ctx = ctx;
 
         this.redrawWorldMap();
     }
 
-    createNewCanvas(minX, maxX, minY, maxY) {
+    createNewCanvas(minX: number, maxX: number, minY: number, maxY: number) {
         const cols = Math.max(DEFAULT_MAP_WIDTH, maxX - minX + 1 + INCREMENT_BY);
         const rows = Math.max(DEFAULT_MAP_HEIGHT, maxY - minY + 1 + INCREMENT_BY);
 
         this.canvas = new OffscreenCanvas(cols * MAP_ROOM_WIDTH, rows * MAP_ROOM_HEIGHT);
-        this.ctx = this.canvas.getContext('2d');
+
+        const ctx = this.canvas.getContext('2d');
+
+        if (!ctx) {
+            throw Error('Could not construct canvas');
+        }
+
+        this.ctx = ctx;
     }
 
-    getNeighboringDoors(x, y) {
+    getNeighboringDoors(x: number, y: number) {
         return {
             right: { ...this.map[this.index(x + 1, y)]?.doors?.left },
             left: { ...this.map[this.index(x - 1, y)]?.doors?.right },
@@ -58,7 +86,7 @@ export class WorldMap {
         };
     }
 
-    generateRoomChoices(x, y, suggestedDoors = {}) {
+    generateRoomChoices(x: number, y: number, suggestedDoors: Partial<DoorsMap> = {}) {
         const makeColor = () => `hsl(${randint(0, 360)}, 60%, 60%)`;
 
         const cloneDoors = () => ({
@@ -85,6 +113,10 @@ export class WorldMap {
 
         for (let i = 0; i < 3; i++) {
             const RoomType = acceptableConstructors.shift();
+
+            if (!RoomType) {
+                throw new Error('Could not find enough rooms');
+            }
 
             /** Must re-compute neighboring doors for each as otherwise each instance will be shared. */
             choices.push(new RoomType(x, y, 1, 1, makeColor(), cloneDoors()));
@@ -121,7 +153,7 @@ export class WorldMap {
         }
     }
 
-    drawMapToScreen(ctx, x, y, width, height) {
+    drawMapToScreen(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
         const drawWidth = Math.min(width, this.canvas.width);
         const drawHeight = Math.min(height, this.canvas.height);
 
@@ -139,25 +171,25 @@ export class WorldMap {
         );
     }
 
-    index(x, y) {
+    index(x: number, y: number) {
         return `${x},${y}`;
     }
 
-    getCurrentRoom() {
-        return this.map[this.currentIndex];
+    getCurrentRoom(): Room {
+        return this.map[this.currentIndex]!;
     }
 
-    getPreviousRoom() {
-        return this.map[this.index(this.lastRoomIndex.x, this.lastRoomIndex.y)];
+    getPreviousRoom(): Room {
+        return this.map[this.index(this.lastRoomIndex.x, this.lastRoomIndex.y)]!;
     }
 
-    hasRoom(x, y) {
+    hasRoom(x: number, y: number) {
         const index = this.index(x, y);
 
         return index in this.map;
     }
 
-    enterRoom(x, y) {
+    enterRoom(x: number, y: number) {
         this.lastRoomIndex = { x: this.x, y: this.y };
 
         this.x = x;
@@ -167,7 +199,7 @@ export class WorldMap {
         this.redrawWorldMap();
     }
 
-    addRoom(room) {
+    addRoom(room: Room) {
         if (this.map[this.currentIndex]) {
             throw new Error('Adding room where we already have one!');
         }
@@ -196,7 +228,7 @@ export class WorldMap {
             right: this.map[this.index(this.x + 1, this.y)]?.doors?.left,
             top: this.map[this.index(this.x, this.y - 1)]?.doors?.bottom,
             bottom: this.map[this.index(this.x, this.y + 1)]?.doors?.top,
-        })
+        });
 
         this.redrawWorldMap();
     }

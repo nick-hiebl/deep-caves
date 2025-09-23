@@ -1,3 +1,10 @@
+import { DRAW_FRAME_MARKERS } from '../../../constants';
+import { incDecLatch, type IncDecLatch } from '../../../core/latch';
+import { distance, isPointInside, normalize, overlaps, randomPerimeterPoint, randomPointInRect, rectMidpoint, type Rect, type Vector } from '../../../core/math';
+import { Sprite } from '../../../core/sprite';
+import { Particle } from '../../particle';
+import { Room, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH } from '../../room';
+
 const GHOST_WIDTH = 200;
 const GHOST_COLLIDER_WIDTH = 120;
 
@@ -19,8 +26,31 @@ const SCREEN_COLLIDER = {
     height: ROOM_SCALE_HEIGHT + 200,
 };
 
-class GhostBoss {
-    constructor(x, y) {
+export class GhostBoss {
+    hp: number;
+    alive: boolean;
+
+    isNonPhysical: boolean;
+    facing: 'left' | 'right';
+    x: number;
+    y: number;
+
+    xVelocity: number = 0;
+    yVelocity: number = 0;
+
+    collider: Rect;
+
+    hurtVisualiser: IncDecLatch;
+    particleCooldown: IncDecLatch;
+
+    strategy: 'initialWait' | 'flee' | 'charge';
+
+    isStrategyComplete: boolean;
+
+    distFromStart: () => number;
+    distFromTarget: () => number;
+
+    constructor(x: number, y: number) {
         this.hp = 20;
         this.alive = true;
 
@@ -42,10 +72,12 @@ class GhostBoss {
 
         this.strategy = 'initialWait';
         this.isStrategyComplete = false;
-        this.cooldown = incDecLatch(500, 1);
+
+        this.distFromStart = () => 0;
+        this.distFromTarget = () => 0;
     }
 
-    update(frameDuration, room, playerPosition) {
+    update(frameDuration: number, room: Room, playerPosition: Vector) {
         this.hurtVisualiser.down(frameDuration);
         this.particleCooldown.down(frameDuration);
 
@@ -77,12 +109,10 @@ class GhostBoss {
 
                 this.addParticle(room);
                 return;
-            case 'wait':
-                return;
         }
     }
 
-    addParticle(room) {
+    addParticle(room: Room) {
         if (this.particleCooldown.check() <= 0) {
             const pPos = randomPointInRect(this.collider);
             const RADIUS = 4;
@@ -101,7 +131,7 @@ class GhostBoss {
         }
     }
 
-    initFlee(playerPosition) {
+    initFlee(playerPosition: Vector) {
         this.strategy = 'flee';
 
         const startingPoint = rectMidpoint(this.collider);
@@ -120,7 +150,7 @@ class GhostBoss {
         }
     }
 
-    initCharge(playerPosition) {
+    initCharge(playerPosition: Vector) {
         this.strategy = 'charge';
 
         /** Choose new starting point */
@@ -148,7 +178,7 @@ class GhostBoss {
         };
     }
 
-    draw(ctx) {
+    draw(ctx: CanvasRenderingContext2D) {
         if (this.hurtVisualiser.check() > 0) {
             ctx.filter = 'brightness(10000%) saturate(0%)';
         }
@@ -177,7 +207,7 @@ class GhostBoss {
         }
     }
 
-    applyDamage(_box) {
+    applyDamage(_box: Rect) {
         this.hp -= 1;
         this.hurtVisualiser.up(1);
 
@@ -186,7 +216,7 @@ class GhostBoss {
         }
     }
 
-    intersects(box) {
+    intersects(box: Rect) {
         if (overlaps(box, this.collider)) {
             return this.collider;
         }

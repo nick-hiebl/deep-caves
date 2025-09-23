@@ -28,8 +28,8 @@ export class Actor {
         this.droppingSet = new Set();
     }
 
-    setDropping(isDropping: boolean) {
-        this.isDropping = isDropping;
+    setDropping(isDropping: boolean | undefined) {
+        this.isDropping = !!isDropping;
 
         this.droppingSet = new Set(Array.from(this.droppingSet).filter(solid => overlaps(this, solid)));
     }

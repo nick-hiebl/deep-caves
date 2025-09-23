@@ -1,9 +1,16 @@
+import { approach, overlaps, type Rect, type Vector } from '../../core/math';
+import type { Room } from '../room';
+
+import { Enemy } from './enemy';
+
 const WALKING_SPEED = 180 / 1000;
 const WALKING_ACCEL = 2 / 1000;
 
-class Walker extends Enemy {
-    constructor(...args) {
-        super(...args);
+const GRAVITY = 2.5 / 1000;
+
+export class Walker extends Enemy {
+    constructor(x: number, y: number) {
+        super(x, y);
 
         this.hp = 5;
 
@@ -11,7 +18,7 @@ class Walker extends Enemy {
         this.facing = 'left';
     }
 
-    updateVelocities(frameDuration, room, _playerPosition) {
+    updateVelocities(frameDuration: number, room: Room, _playerPosition: Vector) {
         /** Do something */
         this.yVelocity += GRAVITY * frameDuration;
 
@@ -40,7 +47,7 @@ class Walker extends Enemy {
         }
     }
 
-    canMoveLeft(room) {
+    canMoveLeft(room: Room) {
         /** Currently taking for granted that we're on the ground. */
 
         const groundSolid = { x: this.actor.x - this.actor.width / 2, y: this.actor.y + this.actor.height, width: this.actor.width / 4, height: 1 };
@@ -50,7 +57,7 @@ class Walker extends Enemy {
             && room.solids.every(solid => !solid.isCollidable || !overlaps(solid, spaceSolid));
     }
 
-    canMoveRight(room) {
+    canMoveRight(room: Room) {
         /** Currently taking for granted that we're on the ground. */
 
         const groundSolid = { x: this.actor.x + this.actor.width / 4 * 5, y: this.actor.y + this.actor.height, width: this.actor.width / 4, height: 1 };
@@ -60,7 +67,7 @@ class Walker extends Enemy {
             && room.solids.every(solid => !solid.isCollidable || solid.isDroppable || !overlaps(solid, spaceSolid));
     }
 
-    applyDamage(box, impulse) {
+    applyDamage(box: Rect, impulse: Partial<Vector>) {
         super.applyDamage(box, impulse);
         this.yVelocity -= 0.3;
     }

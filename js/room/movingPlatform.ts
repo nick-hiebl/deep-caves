@@ -1,13 +1,20 @@
+import type { Actor } from '../core/actor';
+import { Solid } from '../core/solid';
+
 const LOOP_DUR = 7000;
 
-class MovingPlatform {
-    constructor(x, y, width, height) {
+export class MovingPlatform {
+    solid: Solid;
+
+    timeTracked: number;
+
+    constructor(x: number, y: number, width: number, height: number) {
         this.solid = new Solid(x, y, width, height);
 
         this.timeTracked = 0;
     }
 
-    update(frameDuration, actors, solids) {
+    update(frameDuration: number, actors: Actor[], solids: Solid[]) {
         this.timeTracked += frameDuration;
 
         const timeInCycle = this.timeTracked % LOOP_DUR;

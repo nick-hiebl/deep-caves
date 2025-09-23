@@ -1,4 +1,13 @@
-class TRoom extends Room {
+import { Solid } from '../../core/solid';
+import { Walker } from '../enemy/walker';
+import { Room, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH } from '../room';
+import { generateRoomForDoors } from '../room-utils';
+
+function isDefined<T>(item: T | undefined): item is T {
+    return !!item;
+}
+
+export class TRoom extends Room {
     getDoorwayChance() {
         return 0;
     }
@@ -42,7 +51,7 @@ class TRoom extends Room {
                     this.doors.top['left'] ? new Solid(120, 120, 120, 10, { isDroppable: true }) : undefined,
                     this.doors.top['center'] ? new Solid(580, 120, 120, 10, { isDroppable: true }) : undefined,
                     this.doors.top['right'] ? new Solid(1040, 120, 120, 10, { isDroppable: true }) : undefined,
-                ].filter(x => x),
+                ].filter(isDefined),
             );
 
         this.enemies = [
