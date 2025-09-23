@@ -154,7 +154,8 @@ export class Room {
 
     /** Randomise un-specified doors */
     configureAllDoors() {
-        const arr = Room.getDoorArrangement();
+        /** Using constructor to access the static methods of the instantiated sub-class */
+        const arr = (this.constructor as typeof Room).getDoorArrangement();
         const odds = this.getDoorwayChance();
 
         HORIZONTAL_DOOR_KEYS.forEach(key => {

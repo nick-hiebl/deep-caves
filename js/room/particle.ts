@@ -18,7 +18,7 @@ export class Particle implements Rect {
     alive: boolean;
     affectedByGravity: boolean;
 
-    constructor(x: number, y: number, width: number, height: number, color: string, vX: number, vY: number, lifespan: number, gravity = false) {
+    constructor(x: number, y: number, width: number, height: number, color: string, vX: number, vY: number, lifespan: number, affectedByGravity = false) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -32,7 +32,7 @@ export class Particle implements Rect {
 
         this.alive = true;
 
-        this.affectedByGravity = gravity;
+        this.affectedByGravity = affectedByGravity;
     }
 
     draw(ctx: CanvasRenderingContext2D) {
