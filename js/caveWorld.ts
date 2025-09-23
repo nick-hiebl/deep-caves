@@ -1,3 +1,5 @@
+import { latch } from './core/latch';
+
 const FRAME_DURATION = 2;
 
 const MAP_KEY = 'Tab';

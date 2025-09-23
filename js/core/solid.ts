@@ -1,5 +1,23 @@
-class Solid {
-    constructor(x, y, width, height, config = {}) {
+import type { Actor } from './actor';
+import { overlaps } from './math';
+
+type SolidConfig = {
+    isDroppable?: boolean;
+};
+
+export class Solid {
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+
+    isCollidable: boolean;
+    isDroppable: boolean;
+
+    private xRemainder: number;
+    private yRemainder: number;
+
+    constructor(x: number, y: number, width: number, height: number, config: SolidConfig = {}) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -12,7 +30,7 @@ class Solid {
         this.yRemainder = 0;
     }
 
-    move(x, y, actors, solids) {
+    move(x: number, y: number, actors: Actor[], solids: Solid[]) {
         this.xRemainder += x;
         this.yRemainder += y;
 
