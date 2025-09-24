@@ -122,10 +122,10 @@ export class GhostBoss {
                 4,
                 4,
                 'white',
-                this.xVelocity * 0.1,
-                this.yVelocity * 0.1,
+                this.xVelocity * 0.3,
+                this.yVelocity * 0.3,
                 360,
-                true,
+                false,
             ));
             this.particleCooldown.up(1);
         }
