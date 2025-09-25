@@ -1,4 +1,4 @@
-const Sprite = src => {
+export const Sprite = (src: string) => {
     const sprite = new Image();
     sprite.src = src;
 

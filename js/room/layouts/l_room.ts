@@ -1,4 +1,8 @@
-class LRoom extends Room {
+import { Solid } from '../../core/solid';
+import { Room, ROOM_SCALE_WIDTH, type HorizontalDoorKey, type VerticalDoorKey } from '../room';
+import { generateRoomForDoors } from '../room-utils';
+
+export class LRoom extends Room {
     getDoorwayChance() {
         return 0.1;
     }
@@ -20,7 +24,7 @@ class LRoom extends Room {
         };
     }
 
-    static isValidAt(_x, y) {
+    static isValidAt(_x: number, y: number) {
         return y >= 2;
     }
 
@@ -34,7 +38,7 @@ class LRoom extends Room {
                 new Solid(380, 0, ROOM_SCALE_WIDTH - 380, 450),
                 new Solid(120, 140, 120, 10, { isDroppable: true }),
                 new Solid(40, 240, 340, 10, { isDroppable: true }),
-                new Solid(this.doors.left['center'] ? 160: 40, 340, this.doors.left['center'] ? 220 : 340, 10, { isDroppable: true }),
+                new Solid(this.doors?.left?.['center' as HorizontalDoorKey] ? 160 : 40, 340, this.doors.left['center' as HorizontalDoorKey] ? 220 : 340, 10, { isDroppable: true }),
                 new Solid(40, 440, 340, 10, { isDroppable: true }),
                 new Solid(40, this.doors.left['low'] ? 550 : 540, 240, 10, { isDroppable: true }),
             );

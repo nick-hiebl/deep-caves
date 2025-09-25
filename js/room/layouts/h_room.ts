@@ -1,4 +1,8 @@
-class HRoom extends Room {
+import { Solid } from '../../core/solid';
+import { Room, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH } from '../room';
+import { generateRoomForDoors } from '../room-utils';
+
+export class HRoom extends Room {
     getDoorwayChance() {
         return 0;
     }
@@ -28,7 +32,7 @@ class HRoom extends Room {
         };
     }
 
-    static isValidAt(_x, y) {
+    static isValidAt(_x: number, y: number) {
         return y >= 2;
     }
 
@@ -36,8 +40,7 @@ class HRoom extends Room {
     configureRoomContent() {
         /** Inner room setup */
         const { blockers } = generateRoomForDoors(this.doors);
-        this.solids = []
-            .concat(blockers)
+        this.solids = blockers
             .concat(
                 new Solid(0, 0, 80, ROOM_SCALE_HEIGHT),
                 new Solid(ROOM_SCALE_WIDTH - 80, 0, 80, ROOM_SCALE_HEIGHT),

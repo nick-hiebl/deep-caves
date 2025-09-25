@@ -1,3 +1,7 @@
+import { DRAW_FRAME_MARKERS } from '../constants';
+import { Sprite } from '../core/sprite';
+import type { EnemyInterface } from '../room/enemy/interface';
+
 const SWORD_SWOOSH = Sprite('./img/sword_slash.png');
 
 const ATTACK_HEIGHT = 36;
@@ -6,8 +10,14 @@ const ATTACK_SCALE = 2;
 
 const KNOCKBACK_AMOUNT = 0.7;
 
-class Attack {
-    constructor(facing) {
+export class Attack {
+    facing: 'left' | 'right';
+
+    box: { x: number; y: number; width: number; height: number };
+
+    interactedWith: Set<EnemyInterface>;
+
+    constructor(facing: 'left' | 'right') {
         this.facing = facing;
 
         this.box = {
@@ -20,7 +30,7 @@ class Attack {
         this.interactedWith = new Set();
     }
 
-    prePlayerDraw(ctx, relativePosition, attackTransparency) {
+    prePlayerDraw(ctx: CanvasRenderingContext2D, relativePosition: { x: number; y: number }, attackTransparency: number) {
         const attackSrcX = this.facing === 'left' ? 0 : ATTACK_WIDTH;
         const attackDestX = relativePosition.x + this.box.x;
         const attackDestY = relativePosition.y + this.box.y;
@@ -42,7 +52,7 @@ class Attack {
         ctx.globalAlpha = 1;
     }
 
-    postPlayerDraw(ctx, relativePosition, attackTransparency) {
+    postPlayerDraw(ctx: CanvasRenderingContext2D, relativePosition: { x: number; y: number }, attackTransparency: number) {
         const attackSrcX = this.facing === 'left' ? 0 : ATTACK_WIDTH;
         const attackDestX = relativePosition.x + this.box.x;
         const attackDestY = relativePosition.y + this.box.y;
@@ -70,7 +80,7 @@ class Attack {
         }
     }
 
-    getBox(base) {
+    getBox(base: { x: number; y: number }) {
         return {
             x: base.x + this.box.x,
             y: base.y + this.box.y,
@@ -79,7 +89,7 @@ class Attack {
         };
     }
 
-    interactWithEnemy(basePosition, enemy) {
+    interactWithEnemy(basePosition: { x: number; y: number }, enemy: EnemyInterface) {
         if (this.interactedWith.has(enemy)) {
             return;
         }

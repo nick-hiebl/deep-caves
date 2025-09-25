@@ -1,4 +1,9 @@
-class GhostRoom extends Room {
+import { Solid } from '../../core/solid';
+import { GhostBoss } from '../enemy/bosses/ghost-boss';
+import { Room, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH } from '../room';
+import { generateRoomForDoors } from '../room-utils';
+
+export class GhostRoom extends Room {
     getDoorwayChance() {
         return 0;
     }
@@ -28,7 +33,7 @@ class GhostRoom extends Room {
         };
     }
 
-    static isValidAt(_x, _y) {
+    static isValidAt() {
         return true;
     }
 
@@ -47,7 +52,5 @@ class GhostRoom extends Room {
         this.enemies = [
             new GhostBoss(ROOM_SCALE_WIDTH / 2, ROOM_SCALE_HEIGHT / 2),
         ];
-
-        window.GHOST = this.enemies[0];
     }
 }

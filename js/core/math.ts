@@ -1,16 +1,28 @@
-function lerp(a, b, t) {
+export function lerp(a: number, b: number, t: number) {
     return (1 - t) * a + t * b;
 }
 
-function randint(lo, hi) {
+export function randint(lo: number, hi: number) {
     return Math.floor((hi - lo) * Math.random());
 }
 
-function randfloat(lo, hi) {
+export function randfloat(lo: number, hi: number) {
     return lo + Math.random() * (hi - lo);
 }
 
-function overlaps(a, b) {
+export type Vector = {
+    x: number;
+    y: number;
+};
+
+export type Rect = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+
+export function overlaps(a: Rect, b: Rect) {
     if (a.x >= b.x + b.width || b.x >= a.x + a.width) {
         return false;
     }
@@ -22,15 +34,15 @@ function overlaps(a, b) {
     return true;
 }
 
-function isPointInside(rect, x, y) {
+export function isPointInside(rect: Rect, x: number, y: number) {
     return rect.x <= x && x < rect.x + rect.width && rect.y <= y && y < rect.y + rect.height;
 }
 
-function square(x) {
+export function square(x: number) {
     return x * x;
 }
 
-function approach(target, current, step) {
+export function approach(target: number, current: number, step: number) {
     if (target > current) {
         return Math.min(target, current + step);
     } else if (target < current) {
@@ -40,18 +52,18 @@ function approach(target, current, step) {
     }
 }
 
-function clamp(x, lo, hi) {
+export function clamp(x: number, lo: number, hi: number) {
     return Math.max(lo, Math.min(x, hi));
 }
 
-function clampPointWithin({ x, y }, rect) {
+export function clampPointWithin(vector: Vector, rect: Rect) {
     return {
-        x: clamp(x, rect.x, rect.x + rect.width),
-        y: clamp(y, rect.y, rect.y + rect.height),
+        x: clamp(vector.x, rect.x, rect.x + rect.width),
+        y: clamp(vector.y, rect.y, rect.y + rect.height),
     };
 }
 
-function insetRect(rect, insetBy) {
+export function insetRect(rect: Rect, insetBy: number) {
     return {
         x: rect.x + insetBy,
         y: rect.y + insetBy,
@@ -60,27 +72,27 @@ function insetRect(rect, insetBy) {
     };
 }
 
-function rectMidpoint(rect) {
+export function rectMidpoint(rect: Rect) {
     return {
         x: rect.x + rect.width / 2,
         y: rect.y + rect.height / 2,
     };
 }
 
-function normalize({ x, y }, radius) {
-    const magnitude = Math.sqrt(x * x + y * y);
+export function normalize(vector: Vector, radius: number) {
+    const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
 
     return {
-        x: x * radius / magnitude,
-        y: y * radius / magnitude,
+        x: vector.x * radius / magnitude,
+        y: vector.y * radius / magnitude,
     };
 }
 
-function distance({ x, y }, { x: x1, y: y1 }) {
-    return Math.sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
+export function distance(p1: Vector, p2: Vector) {
+    return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y));
 }
 
-function randomPerimeterPoint(rect) {
+export function randomPerimeterPoint(rect: Rect) {
     const halfPerimeter = rect.width + rect.height;
     const pos = randfloat(0, halfPerimeter);
 
@@ -97,7 +109,7 @@ function randomPerimeterPoint(rect) {
     }
 }
 
-function randomPointInRect(rect) {
+export function randomPointInRect(rect: Rect) {
     return {
         x: rect.x + randfloat(0, rect.width),
         y: rect.y + randfloat(0, rect.height),

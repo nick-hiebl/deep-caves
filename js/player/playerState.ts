@@ -1,10 +1,17 @@
-/** Debug option */
-const DRAW_FRAME_MARKERS = false;
+import { DRAW_FRAME_MARKERS } from '../constants';
+import { Actor } from '../core/actor';
+import { approach, lerp, randfloat, square, type Vector } from '../core/math';
+import { Sprite } from '../core/sprite';
+import { Particle } from '../room/particle';
+import type { Room } from '../room/room';
+
+import { Attack } from './attack';
+import { BufferedThrottledInputController } from './inputController';
+import { JumpController } from './jumpController';
 
 /** Player physics details */
 const PLAYER_WIDTH = 14;
 const PLAYER_HEIGHT = 18;
-const COLLISION_CROSS_INSET = 10;
 
 /** Player speed per millisecond */
 const SPEED = 450 / 1000;
@@ -19,12 +26,11 @@ const ATTACK_BUFFER = 300;
 const LEFT_KEY = 'a';
 const DOWN_KEY = 's';
 const RIGHT_KEY = 'd';
-const JUMP_KEY = ' ';
 const ATTACK_KEY = 'j';
 
 const PLAYER_SPRITE = Sprite('./img/sword_man.png');
 
-const getImageCoordinates = (attacking, facing, hasShield) => {
+const getImageCoordinates = (attacking: boolean, facing: 'left' | 'right', hasShield: boolean) => {
     let x = 0, y = 0;
     if (facing === 'right') {
         x += PLAYER_WIDTH * 2;
@@ -39,8 +45,25 @@ const getImageCoordinates = (attacking, facing, hasShield) => {
     return { x, y };
 };
 
-class PlayerState {
-    constructor(x, y) {
+export class PlayerState {
+    lastState: { x: number; y: number };
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+
+    actor: Actor;
+
+    xVelocity: number;
+    yVelocity: number;
+
+    facing: 'left' | 'right';
+
+    jumpController: JumpController;
+    attackController: BufferedThrottledInputController;
+    attacks: Attack[];
+
+    constructor(x: number, y: number) {
         x = Math.round(x);
         y = Math.round(y);
 
@@ -64,7 +87,7 @@ class PlayerState {
         this.attacks = [];
     }
 
-    draw(ctx, _canvas, mousePosition, interpolationFactor) {
+    draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement, _mousePosition: Vector | undefined, interpolationFactor: number) {
         if (DRAW_FRAME_MARKERS) {
             ctx.fillStyle = 'red';
             ctx.fillRect(this.lastState.x - this.width, this.lastState.y - this.height, this.width * 2, this.height * 2);
@@ -97,7 +120,7 @@ class PlayerState {
         }
     }
 
-    update(_mousePosition, keyboardState, frameDuration, room) {
+    update(_mousePosition: Vector | undefined, keyboardState: Record<string, boolean>, frameDuration: number, room: Room) {
         const solids = room.solids;
         const enemies = room.enemies;
 

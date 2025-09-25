@@ -1,4 +1,12 @@
-const createSolid = (args, config) => {
+import { Solid, type SolidConfig } from '../core/solid';
+
+import { GAP_SIZE, GAPS, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, WALL_THICKNESS, type DoorsMap, type HorizontalDoorKey, type VerticalDoorKey } from './room';
+
+type SolidArgs =
+    (({ x: number } | { left: number; x?: undefined }) & ({ width: number } | { right: number; width?: undefined })) &
+    (({ y: number } | { top: number; y?: undefined }) & ({ height: number } | { bottom: number; height?: undefined }));
+
+export const createSolid = (args: SolidArgs, config?: SolidConfig) => {
     const x = args.x ?? args.left;
     const y = args.y ?? args.top;
     const width = args.width ?? args.right - x;
@@ -11,13 +19,13 @@ const createSolid = (args, config) => {
     return new Solid(x, y, width, height, config);
 }
 
-const getGapNames = (gapMap = {}) => {
-    const names = Object.keys(gapMap).filter(key => gapMap[key]);
+const getGapNames = (gapMap: Partial<Record<VerticalDoorKey | HorizontalDoorKey, boolean | undefined>> = {}) => {
+    const names = (Object.keys(gapMap) as (VerticalDoorKey | HorizontalDoorKey)[]).filter(key => gapMap[key]);
     names.sort((a, b) => GAPS[a][0] - GAPS[b][0]);
     return names;
 };
 
-const getDoorBlockingSolids = (doors) => {
+export const getDoorBlockingSolids = (doors: Partial<DoorsMap>) => {
     const solids = [];
 
     solids.push(...getGapNames(doors.left).map(name => GAPS[name]).map(([top, bottom]) =>
@@ -36,7 +44,7 @@ const getDoorBlockingSolids = (doors) => {
     return solids;
 };
 
-const generateRoomForDoors = doors => {
+export const generateRoomForDoors = (doors: DoorsMap) => {
     const solids = [];
     const blockers = [];
 
@@ -47,7 +55,7 @@ const generateRoomForDoors = doors => {
     const topStarts = [0].concat(getGapNames(doors.top).map(name => GAPS[name][1]));
     const topEnds = getGapNames(doors.top).map(name => GAPS[name][0]).concat(ROOM_SCALE_WIDTH);
     solids.push(...topStarts.map((left, index) =>
-        createSolid({ left, right: topEnds[index], y: 0, height: WALL_THICKNESS }),
+        createSolid({ left, right: topEnds[index]!, y: 0, height: WALL_THICKNESS }),
     ));
     blockers.push(...getGapNames(doors.top).map(name => GAPS[name]).map(([left, right]) =>
         createSolid({ left, right, y: 0, height: WALL_THICKNESS }),
@@ -57,7 +65,7 @@ const generateRoomForDoors = doors => {
     const bottomStarts = [0].concat(getGapNames(doors.bottom).map(name => GAPS[name][1]));
     const bottomEnds = getGapNames(doors.bottom).map(name => GAPS[name][0]).concat(ROOM_SCALE_WIDTH);
     solids.push(...bottomStarts.map((left, index) =>
-        createSolid({ left, right: bottomEnds[index], y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }),
+        createSolid({ left, right: bottomEnds[index]!, y: ROOM_SCALE_HEIGHT - WALL_THICKNESS, height: WALL_THICKNESS }),
     ));
     solids.push(...getGapNames(doors.bottom).map(name =>
         createSolid(
@@ -73,7 +81,7 @@ const generateRoomForDoors = doors => {
     const leftStarts = [0].concat(getGapNames(doors.left).map(name => GAPS[name][1]));
     const leftEnds = getGapNames(doors.left).map(name => GAPS[name][0]).concat(ROOM_SCALE_HEIGHT);
     solids.push(...leftStarts.map((top, index) =>
-        createSolid({ top, bottom: leftEnds[index], left: 0, width: WALL_THICKNESS }),
+        createSolid({ top, bottom: leftEnds[index]!, left: 0, width: WALL_THICKNESS }),
     ));
     blockers.push(...getGapNames(doors.left).map(name => GAPS[name]).map(([top, bottom]) =>
         createSolid({ top, bottom, x: 0, width: WALL_THICKNESS }),
@@ -83,7 +91,7 @@ const generateRoomForDoors = doors => {
     const rightStarts = [0].concat(getGapNames(doors.right).map(name => GAPS[name][1]));
     const rightEnds = getGapNames(doors.right).map(name => GAPS[name][0]).concat(ROOM_SCALE_HEIGHT);
     solids.push(...rightStarts.map((top, index) =>
-        createSolid({ top, bottom: rightEnds[index], left: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS }),
+        createSolid({ top, bottom: rightEnds[index]!, left: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS }),
     ));
     blockers.push(...getGapNames(doors.right).map(name => GAPS[name]).map(([top, bottom]) =>
         createSolid({ top, bottom, x: ROOM_SCALE_WIDTH - WALL_THICKNESS, width: WALL_THICKNESS }),

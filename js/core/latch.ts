@@ -1,5 +1,7 @@
-const latch = (initialState) => {
-    let state = initialState ?? false;
+export type BooleanLatch = (newState: boolean, handlers: { onLock?: () => void; onRelease?: () => void }) => void;
+
+export const latch = (initialState: boolean): BooleanLatch => {
+    let state = initialState;
 
     return (newState, { onLock, onRelease }) => {
         if (newState === state) {
@@ -15,7 +17,13 @@ const latch = (initialState) => {
     };
 };
 
-const incDecLatch = (stepsUp, stepsDown) => {
+export type IncDecLatch = {
+    up: (by?: number) => void;
+    down: (by?: number) => void;
+    check: () => number;
+};
+
+export const incDecLatch = (stepsUp: number, stepsDown: number): IncDecLatch => {
     let state = 0;
 
     return {

@@ -1,7 +1,21 @@
+import { isPointInside, overlaps } from './math';
+import { Solid } from './solid';
+
 const STEP_SIZE = 4;
 
-class Actor {
-    constructor(x, y, width, height) {
+export class Actor {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+
+    private xRemainder: number;
+    private yRemainder: number;
+
+    isDropping: boolean;
+    droppingSet: Set<any>;
+
+    constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -14,13 +28,13 @@ class Actor {
         this.droppingSet = new Set();
     }
 
-    setDropping(isDropping) {
-        this.isDropping = isDropping;
+    setDropping(isDropping: boolean | undefined) {
+        this.isDropping = !!isDropping;
 
         this.droppingSet = new Set(Array.from(this.droppingSet).filter(solid => overlaps(this, solid)));
     }
 
-    moveX(amount, onCollide, solids) {
+    moveX(amount: number, onCollide: (solid: Solid) => void, solids: Solid[]) {
         this.xRemainder += amount;
         let move = Math.round(this.xRemainder);
 
@@ -49,7 +63,7 @@ class Actor {
         }
     }
 
-    moveY(amount, onCollide, solids) {
+    moveY(amount: number, onCollide: (solid: Solid) => void, solids: Solid[]) {
         this.yRemainder += amount;
         let move = Math.round(this.yRemainder);
 
@@ -82,7 +96,7 @@ class Actor {
         }
     }
 
-    isGrounded(solids) {
+    isGrounded(solids: Solid[]) {
         const groundingCollider = { x: this.x, y: this.y + this.height, width: this.width, height: 1 };
 
         const groundingSolid = solids.find(solid => {
@@ -100,8 +114,8 @@ class Actor {
         return !!groundingSolid;
     }
 
-    collideAt(solids) {
-        const droppingThroughSolids = [];
+    collideAt(solids: Solid[]) {
+        const droppingThroughSolids: Solid[] = [];
 
         const collidingSolid = solids.find(solid => {
             if (!solid.isCollidable) {
@@ -129,7 +143,7 @@ class Actor {
         return { collidingSolid, droppingThroughSolids };
     }
 
-    isRiding(solid) {
+    isRiding(solid: Solid) {
         return isPointInside(solid, this.x, this.y + this.height)
             || isPointInside(solid, this.x + this.width - 1, this.y + this.height);
     }

@@ -1,20 +1,44 @@
+import { DRAW_FRAME_MARKERS } from "../../../constants";
+import { Actor } from "../../../core/actor";
+import { incDecLatch, type IncDecLatch } from "../../../core/latch";
+import { clampPointWithin, insetRect, overlaps, randfloat, randint, rectMidpoint, type Rect, type Vector } from "../../../core/math";
+import type { Solid } from "../../../core/solid";
+import { Sprite } from "../../../core/sprite";
+import { Particle } from "../../particle";
+import type { Room } from "../../room";
+import type { EnemyInterface } from "../interface";
+
 const SPITBOSS_BASE_WIDTH = 340;
 const SPITBOSS_BASE_HEIGHT = 76;
 
 const SPITBOSS_HEAD_WIDTH = 60;
 const SPITBOSS_HEAD_HEIGHT = 80;
 
+const GRAVITY = 2.5 / 1000;
+
 const SpitBossHeadSprite = Sprite('./img/spitboss-head.png');
 const SpitBossBaseSprite = Sprite('./img/spitboss-base.png');
 const SpitBossSpitSprite = Sprite('./img/spitboss-spit.png');
 
-class SpitBoss {
-    constructor(x, y) {
+export class SpitBoss implements EnemyInterface {
+    hp: number;
+    alive: boolean;
+
+    isNonPhysical: boolean;
+
+    x: number;
+    y: number;
+    baseBox: Rect;
+    headBox: Rect;
+
+    hurtVisualiser: IncDecLatch;
+    fireCooldown: IncDecLatch;
+
+    constructor(x: number, y: number) {
         this.hp = 50;
         this.alive = true;
 
         this.isNonPhysical = false;
-        this.facing = 'left';
 
         this.x = x;
         this.y = y;
@@ -37,7 +61,7 @@ class SpitBoss {
         this.fireCooldown = incDecLatch(1, 1200);
     }
 
-    draw(ctx) {
+    draw(ctx: CanvasRenderingContext2D) {
         if (this.hurtVisualiser.check() > 0) {
             ctx.filter = 'brightness(1000%) saturate(0%)';
         }
@@ -80,7 +104,7 @@ class SpitBoss {
         }
     }
 
-    update(frameDuration, room, playerPosition) {
+    update(frameDuration: number, room: Room, playerPosition: Vector) {
         this.hurtVisualiser.down(frameDuration);
 
         this.fireCooldown.down(frameDuration);
@@ -95,7 +119,7 @@ class SpitBoss {
         }
     }
 
-    createProjectile(room, playerPosition) {
+    createProjectile(room: Room, playerPosition: Vector) {
         const aboveCollider = {
             x: this.x - 5,
             width: 10,
@@ -142,7 +166,7 @@ class SpitBoss {
         );
     }
 
-    applyDamage(box) {
+    applyDamage(box: Rect) {
         if (box === this.headBox) {
             this.hp -= 3;
             this.hurtVisualiser.up(1);
@@ -156,7 +180,7 @@ class SpitBoss {
         }
     }
 
-    intersects(box) {
+    intersects(box: Rect) {
         if (overlaps(box, this.headBox)) {
             return this.headBox;
         } else if (overlaps(box, this.baseBox)) {
@@ -167,8 +191,19 @@ class SpitBoss {
 
 const SPITBALL_RADIUS = 14;
 
-class SpitBoss_Spit {
-    constructor(x, y, xVel, yVel, parent) {
+class SpitBoss_Spit implements EnemyInterface {
+    actor: Actor;
+    xVelocity: number;
+    yVelocity: number;
+
+    parent: SpitBoss;
+
+    alive: boolean;
+    struck: boolean;
+
+    hitVisualiser: IncDecLatch;
+
+    constructor(x: number, y: number, xVel: number, yVel: number, parent: SpitBoss) {
         this.actor = new Actor(x - SPITBALL_RADIUS, y - SPITBALL_RADIUS, SPITBALL_RADIUS * 2, SPITBALL_RADIUS * 2);
 
         this.xVelocity = xVel;
@@ -183,7 +218,7 @@ class SpitBoss_Spit {
         this.hitVisualiser = incDecLatch(1, 150);
     }
 
-    draw(ctx) {
+    draw(ctx: CanvasRenderingContext2D) {
         const OFFSET = 2;
         ctx.drawImage(
             SpitBossSpitSprite,
@@ -198,7 +233,7 @@ class SpitBoss_Spit {
         );
     }
 
-    addParticle(room, origin, velocity) {
+    addParticle(room: Room, origin: Vector, velocity: Vector) {
         const PARTICLE_RADIUS = 3;
 
         room.addParticle(new Particle(
@@ -214,32 +249,32 @@ class SpitBoss_Spit {
         ));
     }
 
-    update(frameDuration, room, _playerPosition) {
+    update(frameDuration: number, room: Room, _playerPosition: Vector) {
         this.hitVisualiser.down(frameDuration);
 
-        const wallHit = (drn) => (solid) => {
+        const wallHit = (drn: 'x' | 'y') => (solid: Solid) => {
             this.alive = false;
 
             const origin = drn === 'x'
                 ? {
                     x: this.xVelocity > 0 ? solid.x : solid.x + solid.width,
                     y: this.actor.y + this.actor.height / 2,
-                  }
+                }
                 : {
                     x: this.actor.x + this.actor.width / 2,
                     y: this.yVelocity > 0 ? solid.y : solid.y + solid.height,
-                  };
+                };
 
             for (let i = 0; i < 12; i++) {
                 const vel = drn === 'x'
                     ? {
                         x: -this.xVelocity * randfloat(0.4, 0.6),
                         y: randfloat(-0.2, 0.2),
-                      }
+                    }
                     : {
                         x: randfloat(-0.2, 0.2),
                         y: -this.yVelocity * randfloat(0.2, 0.3),
-                      };
+                    };
 
                 this.addParticle(room, origin, vel);
             }
@@ -258,8 +293,6 @@ class SpitBoss_Spit {
 
                 const origin = clampPointWithin(rectMidpoint(this.actor), insetRect(hitBox, 16));
 
-                console.log(this.xVelocity, this.yVelocity);
-
                 for (let i = 0; i < 12; i++) {
                     const vel = {
                         x: -this.xVelocity * randfloat(0.4, 0.6) + randfloat(-0.2, 0.2),
@@ -274,7 +307,7 @@ class SpitBoss_Spit {
         }
     }
 
-    applyDamage(_box, impulse) {
+    applyDamage(_box: Rect, impulse: Partial<Vector>) {
         this.hitVisualiser.up(1);
 
         this.xVelocity = impulse?.x ?? 0;
@@ -282,7 +315,7 @@ class SpitBoss_Spit {
         this.struck = true;
     }
 
-    intersects(box) {
+    intersects(box: Rect) {
         if (overlaps(box, this.actor)) {
             return this.actor;
         }
