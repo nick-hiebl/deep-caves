@@ -1,24 +1,7 @@
 import { Actor } from '../../core/actor';
 import type { Vector } from '../../core/math';
 import { Solid } from '../../core/solid';
-import { isDefined } from '../../core/types';
 import { Component, ECS, System, type Entity, type UpdateArgs } from '../../ecs/ecs';
-
-export class Collider implements Component {
-    instance: Actor | Solid;
-
-    constructor(instance: Actor | Solid) {
-        this.instance = instance;
-    }
-
-    static createActor(x: number, y: number, width: number, height: number) {
-        return new Collider(new Actor(x, y, width, height));
-    }
-
-    static createSolid(x: number, y: number, width: number, height: number) {
-        return new Collider(new Solid(x, y, width, height));
-    }
-}
 
 export class Velocity implements Component {
     velocity: Vector;
@@ -28,30 +11,35 @@ export class Velocity implements Component {
     }
 }
 
-export class ColliderSystem implements System {
-    componentSet = new Set([Collider]);
+export class SolidSystem implements System {
+    componentSet = new Set([Solid]);
+
+    ecs!: ECS;
+
+    update() { }
+}
+
+export class ActorSystem implements System {
+    componentSet = new Set([Actor]);
 
     ecs!: ECS;
 
     update(entities: Set<Entity>, { frameDuration }: UpdateArgs) {
-        const containers = Array.from(entities.values().map(entity => this.ecs.getComponents(entity)).filter(isDefined));
-        const colliders = containers.map(e => e.get(Collider));
-        const solids = Array.from(colliders.map(c => c.instance).filter(i => i instanceof Solid));
-        const actors = Array.from(containers.filter(coll => coll.get(Collider).instance instanceof Actor));
+        const actorEntities = Array.from(entities).map(a => this.ecs.getComponents(a));
+        const solids = this.ecs.resolveEntities(this.ecs.querySystem(SolidSystem), Solid);
 
-        actors.forEach(actor => {
-            const actorColl = actor.get(Collider);
-            const a = actorColl.instance as Actor;
+        actorEntities.forEach(actorEntity => {
+            const actor = actorEntity.get(Actor);
 
-            if (actor.has(Velocity)) {
-                const v = actor.get(Velocity).velocity;
-                a.moveX(v.x * frameDuration, () => { }, solids);
-                a.moveY(v.y * frameDuration, () => {
+            if (actorEntity.has(Velocity)) {
+                const v = actorEntity.get(Velocity).velocity;
+                actor.moveX(v.x * frameDuration, () => { }, solids);
+                actor.moveY(v.y * frameDuration, () => {
                     v.y = 0;
                 }, solids);
             }
 
-            a.isGrounded(solids);
+            actor.isGrounded(solids);
         });
     }
 }

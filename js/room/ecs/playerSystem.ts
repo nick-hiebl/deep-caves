@@ -6,7 +6,7 @@ import type { Component, ECS, Entity, System, UpdateArgs } from '../../ecs/ecs';
 import type { BufferedThrottledInputController } from '../../player/inputController';
 import { JumpController } from '../../player/jumpController';
 
-import { Collider, Velocity } from './solidSystem';
+import { Velocity } from './solidSystem';
 
 const LEFT_KEY = 'a';
 const DOWN_KEY = 's';
@@ -55,13 +55,13 @@ export class PlayerComponent implements Component {
 }
 
 export class PlayerSystem implements System {
-    componentSet = new Set([PlayerComponent, Collider, Velocity]);
+    componentSet = new Set([PlayerComponent, Actor, Velocity]);
 
     ecs!: ECS;
 
     update(entities: Set<Entity>, { frameDuration, keyboardState }: UpdateArgs) {
         entities.values().map(e => this.ecs.getComponents(e)).filter(isDefined).forEach(e => {
-            const actor = e.get(Collider).instance as Actor;
+            const actor = e.get(Actor);
             const velocity = e.get(Velocity).velocity;
             const playerComponent = e.get(PlayerComponent);
 
@@ -91,7 +91,7 @@ export class PlayerSystem implements System {
 
     draw(entities: Set<Entity>, ctx: CanvasRenderingContext2D) {
         entities.values().map(e => this.ecs.getComponents(e)).filter(isDefined).forEach(e => {
-            const actor = e.get(Collider).instance;
+            const actor = e.get(Actor);
             const playerComponent = e.get(PlayerComponent);
 
             const isAttacking = false;
@@ -106,7 +106,7 @@ export class PlayerSystem implements System {
 export const createPlayer = (ecs: ECS, x: number, y: number): Entity => {
     const player = ecs.addEntity();
     ecs.addComponent(player, new PlayerComponent());
-    ecs.addComponent(player, new Collider(new Actor(x, y, PLAYER_WIDTH, PLAYER_HEIGHT)));
+    ecs.addComponent(player, new Actor(x, y, PLAYER_WIDTH, PLAYER_HEIGHT));
     ecs.addComponent(player, new Velocity({ x: 0, y: 0 }));
 
     return player;

@@ -1,7 +1,9 @@
-import { isPointInside, overlaps } from './math';
+import type { Component } from '../ecs/ecs';
+
+import { overlaps } from './math';
 import { Solid } from './solid';
 
-export class Actor {
+export class Actor implements Component {
     x: number;
     y: number;
     width: number;

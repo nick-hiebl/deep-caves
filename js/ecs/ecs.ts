@@ -105,6 +105,14 @@ export class ECS {
         })?.[1];
     }
 
+    resolveEntities<T extends Component>(entities: Set<Entity> | undefined, componentClass: ComponentClass<T>): T[] {
+        if (!entities) {
+            return [];
+        }
+
+        return Array.from(entities.values()).map(e => this.getComponents(e)).map(c => c.get(componentClass));
+    }
+
     removeSystem(system: System) {
         this.systems.delete(system);
     }

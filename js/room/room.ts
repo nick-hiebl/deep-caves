@@ -4,7 +4,7 @@ import { ECS } from '../ecs/ecs';
 import { MovingPlatform, MovingPlatformSystem } from './ecs/movingPlatformSystem';
 import { createPlayer, PlayerComponent, PlayerSystem } from './ecs/playerSystem';
 import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
-import { Collider, ColliderSystem, Velocity } from './ecs/solidSystem';
+import { ActorSystem, SolidSystem } from './ecs/solidSystem';
 import { Enemy } from './enemy/enemy';
 import type { EnemyInterface } from './enemy/interface';
 import { Walker } from './enemy/walker';
@@ -108,7 +108,8 @@ export class Room {
 
         this.ecs = new ECS();
 
-        this.ecs.addSystem(new ColliderSystem());
+        this.ecs.addSystem(new ActorSystem());
+        this.ecs.addSystem(new SolidSystem());
         this.ecs.addSystem(new RectArtSystem(color));
         this.ecs.addSystem(new PlayerSystem());
         this.ecs.addSystem(new MovingPlatformSystem());
@@ -181,13 +182,13 @@ export class Room {
         const { solids, blockers, ladders } = generateRoomForDoors(this.doors);
         solids.concat(blockers).concat(ladders).forEach(solid => {
             const e = this.ecs.addEntity();
-            this.ecs.addComponent(e, new Collider(solid));
+            this.ecs.addComponent(e, solid);
             this.ecs.addComponent(e, new DrawableRect(solid, solid.color));
         });
 
         const plat = this.ecs.addEntity();
         const platSolid = new Solid(300, 280, 200, 40)
-        this.ecs.addComponent(plat, new Collider(platSolid));
+        this.ecs.addComponent(plat, platSolid);
         this.ecs.addComponent(plat, new DrawableRect(platSolid, this.color));
         this.ecs.addComponent(plat, new MovingPlatform(7000, { x: 300, y: 280 }, { x: 600, y: 280 }))
 

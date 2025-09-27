@@ -1,3 +1,5 @@
+import type { Component } from '../ecs/ecs';
+
 import type { Actor } from './actor';
 import { overlaps } from './math';
 
@@ -5,7 +7,7 @@ export type SolidConfig = {
     isDroppable?: boolean;
 };
 
-export class Solid {
+export class Solid implements Component {
     x: number;
     y: number;
     height: number;

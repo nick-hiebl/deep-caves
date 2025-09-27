@@ -1,9 +1,8 @@
 import { Actor } from '../../core/actor';
 import { lerp, type Vector } from '../../core/math';
 import { Solid } from '../../core/solid';
-import { isDefined } from '../../core/types';
 import type { Component, ECS, Entity, System, UpdateArgs } from '../../ecs/ecs';
-import { Collider, ColliderSystem } from './solidSystem';
+import { ActorSystem, SolidSystem } from './solidSystem';
 
 export class MovingPlatform implements Component {
     loopDuration: number;
@@ -22,26 +21,19 @@ export class MovingPlatform implements Component {
 }
 
 export class MovingPlatformSystem implements System {
-    componentSet = new Set([Collider, MovingPlatform]);
+    componentSet = new Set([Solid, MovingPlatform]);
 
     ecs!: ECS;
 
     update(entities: Set<Entity>, { frameDuration }: UpdateArgs) {
-        const colliders = Array.from(
-            this.ecs.querySystem(ColliderSystem)?.values() ?? []
-        )
-            .map(e => this.ecs.getComponents(e))
-            .filter(isDefined)
-            .map(e => e.get(Collider).instance);
-
-        const actors = colliders.filter(i => i instanceof Actor);
-        const solids = colliders.filter(i => i instanceof Solid);
+        const actors = this.ecs.resolveEntities(this.ecs.querySystem(ActorSystem), Actor);
+        const solids = this.ecs.resolveEntities(this.ecs.querySystem(SolidSystem), Solid);
 
         entities.values().forEach(e => {
             const container = this.ecs.getComponents(e);
 
             const mover = container.get(MovingPlatform);
-            const solid = container.get(Collider).instance as Solid;
+            const solid = container.get(Solid);
 
             mover.loopState += frameDuration;
             mover.loopState %= mover.loopDuration;
