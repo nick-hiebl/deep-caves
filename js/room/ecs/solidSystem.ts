@@ -1,7 +1,8 @@
 import { Actor } from '../../core/actor';
-import type { Vector } from '../../core/math';
+import { overlaps, type Vector } from '../../core/math';
 import { Solid } from '../../core/solid';
 import { Component, ECS, System, type Entity, type UpdateArgs } from '../../ecs/ecs';
+import { PlayerSystem } from './playerSystem';
 
 export class Velocity implements Component {
     velocity: Vector;
@@ -16,7 +17,30 @@ export class SolidSystem implements System {
 
     ecs!: ECS;
 
-    update() { }
+    state: 'pre-lock' | 'locked' | 'cleared' = 'pre-lock'
+
+    update(entities: Set<Entity>) {
+        switch (this.state) {
+            case 'pre-lock':
+                const players = this.ecs.resolveEntities(this.ecs.querySystem(PlayerSystem), Actor);
+                const blockers = this.ecs.resolveEntities(entities, Solid)
+                    .filter(solid => solid.blocker);
+
+                /** Check if player is still overlapping any blocker. */
+                if (blockers.some(blocker => players.some(player => overlaps(blocker, player)))) {
+                    return;
+                }
+
+                blockers.forEach(blocker => { blocker.isCollidable = true });
+                this.state = 'locked';
+                return;
+            case 'locked':
+                /** No enemy system to query right now. */
+                return;
+            case 'cleared':
+                return;
+        }
+    }
 }
 
 export class ActorSystem implements System {
