@@ -1,10 +1,12 @@
 import { Actor } from '../../core/actor';
-import { approach } from '../../core/math';
+import { approach, randfloat } from '../../core/math';
 import { Sprite } from '../../core/sprite';
 import { isDefined } from '../../core/types';
 import type { Component, ECS, Entity, System, UpdateArgs } from '../../ecs/ecs';
 import type { BufferedThrottledInputController } from '../../player/inputController';
 import { JumpController } from '../../player/jumpController';
+
+import { createParticle } from './particleSystem';
 
 import { Velocity } from './solidSystem';
 
@@ -73,6 +75,20 @@ export class PlayerSystem implements System {
             velocity.y += yAcceleration * frameDuration;
 
             if (isJumping) {
+                const root = { x: actor.x + actor.width / 2, y: actor.y + actor.height };
+                const PARTICLE_RADIUS = 2;
+
+                for (let i = 0; i < 10; i++) {
+                    const factor = randfloat(-0.3, 0.3);
+                    createParticle(
+                        this.ecs,
+                        { x: root.x + factor * actor.width, y: root.y },
+                        PARTICLE_RADIUS,
+                        { x: factor * 0.6, y: randfloat(0.05, 0.11) * (Math.random() < 0.7 ? 1 : -1) },
+                        'white',
+                        randfloat(140, 240),
+                    );
+                }
                 // Add particles
                 velocity.y = -JUMP_MAGNITUDE;
             }

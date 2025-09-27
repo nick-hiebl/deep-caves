@@ -1,16 +1,15 @@
 import { overlaps, type Vector } from '../core/math';
 import { Solid } from '../core/solid';
 import { ECS } from '../ecs/ecs';
+
 import { createEnemy, EnemySystem } from './ecs/enemySystem';
 import { MovingPlatform, MovingPlatformSystem } from './ecs/movingPlatformSystem';
-import { createPlayer, PlayerComponent, PlayerSystem } from './ecs/playerSystem';
+import { ParticleSystem } from './ecs/particleSystem';
+import { createPlayer, PlayerSystem } from './ecs/playerSystem';
 import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
 import { ActorSystem, SolidSystem } from './ecs/solidSystem';
-import { Enemy } from './enemy/enemy';
-import type { EnemyInterface } from './enemy/interface';
-import { Walker } from './enemy/walker';
 import type { Particle } from './particle';
-import { generateRoomForDoors, getDoorBlockingSolids } from './room-utils';
+import { generateRoomForDoors } from './room-utils';
 
 export const WALL_THICKNESS = 40;
 
@@ -115,6 +114,7 @@ export class Room {
         this.ecs.addSystem(new PlayerSystem());
         this.ecs.addSystem(new MovingPlatformSystem());
         this.ecs.addSystem(new EnemySystem());
+        this.ecs.addSystem(new ParticleSystem());
 
         this.color = color;
 

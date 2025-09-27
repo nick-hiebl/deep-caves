@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "esbuild js/main.ts --bundle --minify --sourcemap --outfile=build/index.js",
-    "watch": "nodemon --exec \"yarn build\" -e js,ts --ignore build/"
+    "watch": "nodemon -L --exec \"yarn build\" -e js,ts --ignore build/"
   },
   "author": "",
   "license": "ISC"

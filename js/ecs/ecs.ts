@@ -100,7 +100,7 @@ export class ECS {
     }
 
     querySystem(systemClass: Function): Set<Entity> | undefined {
-        return Array.from(this.systems.entries()).find(([system, entities]) => {
+        return Array.from(this.systems.entries()).find(([system]) => {
             return system instanceof systemClass;
         })?.[1];
     }

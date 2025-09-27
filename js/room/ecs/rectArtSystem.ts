@@ -5,10 +5,12 @@ import { Component, ECS, System, type Entity } from '../../ecs/ecs';
 export class DrawableRect implements Component {
     color: string | undefined;
     rect: Rect;
+    opacity: number;
 
     constructor(rect: Rect, color?: string) {
         this.color = color;
         this.rect = rect;
+        this.opacity = 1;
     }
 }
 
@@ -28,7 +30,13 @@ export class RectArtSystem implements System {
     draw(entities: Set<Entity>, ctx: CanvasRenderingContext2D) {
         const rects = entities.values().map(e => this.ecs.getComponents(e)).filter(isDefined).map(e => e.get(DrawableRect));
         
-        rects.forEach(({ rect, color }) => {
+        rects.forEach(({ rect, color, opacity }) => {
+            if (opacity <= 0) {
+                return;
+            } else if (opacity < 1) {
+                ctx.filter = `opacity(${Math.round(100 * opacity)}%)`;
+            }
+
             if (color) {
                 ctx.fillStyle = color;
             } else {
@@ -36,6 +44,8 @@ export class RectArtSystem implements System {
             }
 
             ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+
+            ctx.filter = 'none';
         });
     }
 }
