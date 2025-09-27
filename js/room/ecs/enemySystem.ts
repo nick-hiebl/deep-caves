@@ -18,7 +18,9 @@ const SPRITE_HEIGHT = 32;
 const ENEMY_WIDTH = 48;
 const ENEMY_HEIGHT = 64;
 
-export class EnemyComponent implements Component {
+export class EnemyComponent implements Component { }
+
+export class EnemyMovement implements Component {
     hp: number;
 
     facing: 'left' | 'right';
@@ -36,7 +38,15 @@ export class EnemyComponent implements Component {
 }
 
 export class EnemySystem implements System {
-    componentSet = new Set([EnemyComponent, Actor, Velocity]);
+    componentSet = new Set([EnemyComponent]);
+
+    ecs!: ECS;
+
+    update() { }
+}
+
+export class EnemyMovementSystem implements System {
+    componentSet = new Set([EnemyMovement, Actor, Velocity]);
 
     ecs!: ECS;
 
@@ -47,7 +57,7 @@ export class EnemySystem implements System {
         const enemies = Array.from(entities.values().map(e => this.ecs.getComponents(e)));
 
         enemies.forEach(enemy => {
-            const enemyC = enemy.get(EnemyComponent);
+            const enemyC = enemy.get(EnemyMovement);
             const myMid = rectMidpoint(enemy.get(Actor));
             const v = enemy.get(Velocity).velocity;
 
@@ -78,7 +88,7 @@ export class EnemySystem implements System {
     draw(entities: Set<Entity>, ctx: CanvasRenderingContext2D) {
         entities.values().forEach(e => {
             const enemy = this.ecs.getComponents(e);
-            const enemyC = enemy.get(EnemyComponent);
+            const enemyC = enemy.get(EnemyMovement);
             const actor = enemy.get(Actor);
 
             ctx.drawImage(
@@ -98,12 +108,13 @@ export class EnemySystem implements System {
 
 export const createEnemy = (ecs: ECS, x: number, y: number): Entity => {
     const enemy = ecs.addEntity();
-    ecs.addComponent(enemy, new EnemyComponent());
+    ecs.addComponent(enemy, new EnemyMovement());
 
     const actor = new Actor(x, y, ENEMY_WIDTH, ENEMY_HEIGHT);
     actor.isNonPhysical = true;
 
     ecs.addComponent(enemy, actor);
+    ecs.addComponent(enemy, new EnemyComponent());
     ecs.addComponent(enemy, new Velocity({ x: 0, y: 0 }));
 
     return enemy;
