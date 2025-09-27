@@ -63,7 +63,7 @@ export function clampPointWithin(vector: Vector, rect: Rect) {
     };
 }
 
-export function insetRect(rect: Rect, insetBy: number) {
+export function insetRect(rect: Rect, insetBy: number): Rect {
     return {
         x: rect.x + insetBy,
         y: rect.y + insetBy,
@@ -72,14 +72,14 @@ export function insetRect(rect: Rect, insetBy: number) {
     };
 }
 
-export function rectMidpoint(rect: Rect) {
+export function rectMidpoint(rect: Rect): Vector {
     return {
         x: rect.x + rect.width / 2,
         y: rect.y + rect.height / 2,
     };
 }
 
-export function normalize(vector: Vector, radius: number) {
+export function normalize(vector: Vector, radius: number): Vector {
     const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
 
     return {
@@ -92,7 +92,7 @@ export function distance(p1: Vector, p2: Vector) {
     return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y));
 }
 
-export function randomPerimeterPoint(rect: Rect) {
+export function randomPerimeterPoint(rect: Rect): Vector {
     const halfPerimeter = rect.width + rect.height;
     const pos = randfloat(0, halfPerimeter);
 
@@ -109,7 +109,7 @@ export function randomPerimeterPoint(rect: Rect) {
     }
 }
 
-export function randomPointInRect(rect: Rect) {
+export function randomPointInRect(rect: Rect): Vector {
     return {
         x: rect.x + randfloat(0, rect.width),
         y: rect.y + randfloat(0, rect.height),

@@ -1,6 +1,7 @@
 import { overlaps, type Vector } from '../core/math';
 import { Solid } from '../core/solid';
 import { ECS } from '../ecs/ecs';
+import { createEnemy, EnemySystem } from './ecs/enemySystem';
 import { MovingPlatform, MovingPlatformSystem } from './ecs/movingPlatformSystem';
 import { createPlayer, PlayerComponent, PlayerSystem } from './ecs/playerSystem';
 import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
@@ -113,6 +114,7 @@ export class Room {
         this.ecs.addSystem(new RectArtSystem(color));
         this.ecs.addSystem(new PlayerSystem());
         this.ecs.addSystem(new MovingPlatformSystem());
+        this.ecs.addSystem(new EnemySystem());
 
         this.color = color;
 
@@ -192,8 +194,8 @@ export class Room {
         this.ecs.addComponent(plat, new DrawableRect(platSolid, this.color));
         this.ecs.addComponent(plat, new MovingPlatform(7000, { x: 300, y: 280 }, { x: 600, y: 280 }))
 
+        createEnemy(this.ecs, ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT);
         // this.enemies = [
-        //     new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
         //     new Walker(ROOM_SCALE_WIDTH / 4 * 3, ROOM_SCALE_HEIGHT / 2),
         // ];
     }

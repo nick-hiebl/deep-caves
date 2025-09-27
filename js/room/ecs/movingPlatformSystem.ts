@@ -26,7 +26,8 @@ export class MovingPlatformSystem implements System {
     ecs!: ECS;
 
     update(entities: Set<Entity>, { frameDuration }: UpdateArgs) {
-        const actors = this.ecs.resolveEntities(this.ecs.querySystem(ActorSystem), Actor);
+        const actors = this.ecs.resolveEntities(this.ecs.querySystem(ActorSystem), Actor)
+            .filter(a => !a.isNonPhysical);
         const solids = this.ecs.resolveEntities(this.ecs.querySystem(SolidSystem), Solid);
 
         entities.values().forEach(e => {

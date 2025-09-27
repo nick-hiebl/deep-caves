@@ -54,13 +54,14 @@ export class ActorSystem implements System {
 
         actorEntities.forEach(actorEntity => {
             const actor = actorEntity.get(Actor);
+            const colliders = actor.isNonPhysical ? [] : solids;
 
             if (actorEntity.has(Velocity)) {
                 const v = actorEntity.get(Velocity).velocity;
-                actor.moveX(v.x * frameDuration, () => { }, solids);
+                actor.moveX(v.x * frameDuration, () => { }, colliders);
                 actor.moveY(v.y * frameDuration, () => {
                     v.y = 0;
-                }, solids);
+                }, colliders);
             }
 
             actor.isGrounded(solids);

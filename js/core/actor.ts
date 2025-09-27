@@ -16,6 +16,8 @@ export class Actor implements Component {
     droppingSet: Set<any>;
     grounded: boolean;
 
+    isNonPhysical: boolean;
+
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
         this.y = y;
@@ -29,6 +31,8 @@ export class Actor implements Component {
         this.droppingSet = new Set();
 
         this.grounded = false;
+
+        this.isNonPhysical = false;
     }
 
     setDropping(isDropping: boolean | undefined) {
