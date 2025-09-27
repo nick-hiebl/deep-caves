@@ -30,7 +30,7 @@ export class BufferedThrottledInputController {
             }
         } else {
             if (isPressed) {
-                this.timeSinceUnusedPress = (this.timeSinceUnusedPress ?? 0) + frameDuration;
+                this.timeSinceUnusedPress = this.timeSinceUnusedPress === undefined ? undefined : this.timeSinceUnusedPress + frameDuration;
             }
         }
 

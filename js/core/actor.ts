@@ -1,8 +1,6 @@
 import { isPointInside, overlaps } from './math';
 import { Solid } from './solid';
 
-const STEP_SIZE = 4;
-
 export class Actor {
     x: number;
     y: number;
@@ -14,6 +12,7 @@ export class Actor {
 
     isDropping: boolean;
     droppingSet: Set<any>;
+    grounded: boolean;
 
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
@@ -26,6 +25,8 @@ export class Actor {
 
         this.isDropping = false;
         this.droppingSet = new Set();
+
+        this.grounded = false;
     }
 
     setDropping(isDropping: boolean | undefined) {
@@ -111,7 +112,9 @@ export class Actor {
             return overlaps(groundingCollider, solid);
         });
 
-        return !!groundingSolid;
+        this.grounded = !!groundingSolid;
+
+        return this.grounded;
     }
 
     collideAt(solids: Solid[]) {
@@ -144,8 +147,7 @@ export class Actor {
     }
 
     isRiding(solid: Solid) {
-        return isPointInside(solid, this.x, this.y + this.height)
-            || isPointInside(solid, this.x + this.width - 1, this.y + this.height);
+        return overlaps(solid, { x: this.x, y: this.y + this.height, width: this.width, height: 1 });
     }
 
     squish() {

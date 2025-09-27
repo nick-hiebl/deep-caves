@@ -1,9 +1,10 @@
 import { latch, type BooleanLatch } from './core/latch';
 import { isPointInside, type Vector } from './core/math';
+import { PlayerComponent, PlayerSystem } from './room/ecs/playerSystem';
 import { ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, type DoorsMap, type Room } from './room/room';
 import { WorldMap } from './worldMap';
 
-const FRAME_DURATION = 2;
+const FRAME_DURATION = 10;
 
 const MAP_KEY = 'Tab';
 
@@ -133,24 +134,40 @@ export class CaveWorld {
     }
 
     transferPlayerPosition(lastRoom: Room, newRoom: Room) {
-        newRoom.playerState.xVelocity = lastRoom.playerState.xVelocity;
-        /** Cap player y velocity when falling room to room */
-        newRoom.playerState.yVelocity = Math.min(lastRoom.playerState.yVelocity, 0.1);
+        const oldPlayerEntities = lastRoom.ecs.querySystem(PlayerSystem);
+        const newPlayerEntities = newRoom.ecs.querySystem(PlayerSystem);
 
-        const worldX = lastRoom.playerState.actor.x + lastRoom.x * ROOM_SCALE_WIDTH;
-        const worldY = lastRoom.playerState.actor.y + lastRoom.y * ROOM_SCALE_HEIGHT;
-
-        newRoom.playerState.actor.x = worldX - newRoom.x * ROOM_SCALE_WIDTH;
-        newRoom.playerState.actor.y = worldY - newRoom.y * ROOM_SCALE_HEIGHT;
-
-        /** If falling room to room cap their new y to 1px down */
-        if (newRoom.y >= lastRoom.y + lastRoom.height) {
-            newRoom.playerState.actor.y = Math.min(newRoom.playerState.actor.y, 1);
-        } else if (newRoom.y + newRoom.height <= lastRoom.y) {
-            newRoom.playerState.yVelocity = Math.min(-1.1, newRoom.playerState.yVelocity);
+        if (oldPlayerEntities?.size !== 1 || newPlayerEntities?.size !== 1) {
+            return;
         }
 
-        newRoom.playerState.facing = lastRoom.playerState.facing;
+        const oldPlayer = lastRoom.ecs.getComponents(Array.from(oldPlayerEntities.values())[0]!);
+        const newPlayer = newRoom.ecs.getComponents(Array.from(newPlayerEntities.values())[0]!);
+
+        if (!oldPlayer || !newPlayer) {
+            return;
+        }
+
+        const oldComp = oldPlayer.get(PlayerComponent);
+        const newComp = newPlayer.get(PlayerComponent);
+        // newComp.playerState.xVelocity = oldComp.playerState.xVelocity;
+        // /** Cap player y velocity when falling room to room */
+        // newComp.playerState.yVelocity = Math.min(oldComp.playerState.yVelocity, 0.1);
+
+        // const worldX = oldComp.playerState.actor.x + lastRoom.x * ROOM_SCALE_WIDTH;
+        // const worldY = oldComp.playerState.actor.y + lastRoom.y * ROOM_SCALE_HEIGHT;
+
+        // newComp.playerState.actor.x = worldX - newRoom.x * ROOM_SCALE_WIDTH;
+        // newComp.playerState.actor.y = worldY - newRoom.y * ROOM_SCALE_HEIGHT;
+
+        // /** If falling room to room cap their new y to 1px down */
+        // if (newRoom.y >= lastRoom.y + lastRoom.height) {
+        //     newComp.playerState.actor.y = Math.min(newComp.playerState.actor.y, 1);
+        // } else if (newRoom.y + newRoom.height <= lastRoom.y) {
+        //     newComp.playerState.yVelocity = Math.min(-1.1, newComp.playerState.yVelocity);
+        // }
+
+        // newComp.playerState.facing = oldComp.playerState.facing;
     }
 
     simulateFrame(mousePosition: Vector | undefined, keyboardState: Record<string, boolean>) {

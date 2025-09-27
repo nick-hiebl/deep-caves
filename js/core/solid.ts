@@ -15,8 +15,8 @@ export class Solid {
     isDroppable: boolean;
     color: string | undefined;
 
-    private xRemainder: number;
-    private yRemainder: number;
+    xRemainder: number;
+    yRemainder: number;
 
     blocker: boolean;
 

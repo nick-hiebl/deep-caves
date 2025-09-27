@@ -1,10 +1,13 @@
 import { overlaps, type Vector } from '../core/math';
-import type { Solid } from '../core/solid';
-import { PlayerState } from '../player/playerState';
+import { Solid } from '../core/solid';
+import { ECS } from '../ecs/ecs';
+import { MovingPlatform, MovingPlatformSystem } from './ecs/movingPlatformSystem';
+import { createPlayer, PlayerComponent, PlayerSystem } from './ecs/playerSystem';
+import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
+import { Collider, ColliderSystem, Velocity } from './ecs/solidSystem';
 import { Enemy } from './enemy/enemy';
 import type { EnemyInterface } from './enemy/interface';
 import { Walker } from './enemy/walker';
-import { MovingPlatform } from './movingPlatform';
 import type { Particle } from './particle';
 import { generateRoomForDoors, getDoorBlockingSolids } from './room-utils';
 
@@ -30,13 +33,6 @@ export type HorizontalDoorKey = 'high' | 'medium' | 'low';
 
 const VERTICAL_DOOR_KEYS: VerticalDoorKey[] = ['left', 'center', 'right'];
 const HORIZONTAL_DOOR_KEYS: HorizontalDoorKey[] = ['high', 'medium', 'low'];
-
-const OPPOSITE_FACE = {
-    left: 'right',
-    right: 'left',
-    top: 'bottom',
-    bottom: 'top',
-};
 
 export type Edge = 'left' | 'right' | 'top' | 'bottom';
 
@@ -97,12 +93,11 @@ export class Room {
 
     doors: DoorsMap;
 
-    enemies: EnemyInterface[];
-    solids: Solid[];
-    interactives: MovingPlatform[];
-    particles: Particle[];
+    // enemies: EnemyInterface[];
+    // solids: Solid[];
+    // particles: Particle[];
 
-    playerState: PlayerState;
+    ecs: ECS;
 
     constructor(x: number, y: number, width: number, height: number, color = 'blue', setDoors: Partial<DoorsMap> | undefined = {}) {
         /** Room setup */
@@ -110,6 +105,13 @@ export class Room {
         this.y = y;
         this.width = width;
         this.height = height;
+
+        this.ecs = new ECS();
+
+        this.ecs.addSystem(new ColliderSystem());
+        this.ecs.addSystem(new RectArtSystem(color));
+        this.ecs.addSystem(new PlayerSystem());
+        this.ecs.addSystem(new MovingPlatformSystem());
 
         this.color = color;
 
@@ -123,17 +125,14 @@ export class Room {
             bottom: setDoors.bottom ?? {},
         };
 
-        this.enemies = [];
-        this.solids = [];
-        this.interactives = [];
-        this.particles = [];
+        // this.enemies = [];
+        // this.particles = [];
 
         this.globalDoorwayRectification();
         this.configureAllDoors();
         this.configureRoomContent();
 
-        /** Player setup */
-        this.playerState = new PlayerState(0.5 * ROOM_SCALE_WIDTH, 0.12 * ROOM_SCALE_HEIGHT);
+        createPlayer(this.ecs, 0.5 * ROOM_SCALE_WIDTH, 0.08 * ROOM_SCALE_HEIGHT);
     }
 
     globalDoorwayRectification() {
@@ -180,14 +179,22 @@ export class Room {
     configureRoomContent() {
         /** Inner room setup */
         const { solids, blockers, ladders } = generateRoomForDoors(this.doors);
-        this.solids = solids.concat(blockers).concat(ladders);
-        this.interactives = [new MovingPlatform(0, 280, 200, 40)];
-        this.solids.push(...this.interactives.map(i => i.solid));
+        solids.concat(blockers).concat(ladders).forEach(solid => {
+            const e = this.ecs.addEntity();
+            this.ecs.addComponent(e, new Collider(solid));
+            this.ecs.addComponent(e, new DrawableRect(solid, solid.color));
+        });
 
-        this.enemies = [
-            new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
-            new Walker(ROOM_SCALE_WIDTH / 4 * 3, ROOM_SCALE_HEIGHT / 2),
-        ];
+        const plat = this.ecs.addEntity();
+        const platSolid = new Solid(300, 280, 200, 40)
+        this.ecs.addComponent(plat, new Collider(platSolid));
+        this.ecs.addComponent(plat, new DrawableRect(platSolid, this.color));
+        this.ecs.addComponent(plat, new MovingPlatform(7000, { x: 300, y: 280 }, { x: 600, y: 280 }))
+
+        // this.enemies = [
+        //     new Enemy(ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT),
+        //     new Walker(ROOM_SCALE_WIDTH / 4 * 3, ROOM_SCALE_HEIGHT / 2),
+        // ];
     }
 
     draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, mousePosition: Vector | undefined, interpolationFactor: number) {
@@ -195,101 +202,76 @@ export class Room {
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (const solid of this.solids) {
-            if (solid.color) {
-                ctx.fillStyle = solid.color;
-            } else {
-                ctx.fillStyle = this.color;
-            }
-            ctx.fillRect(solid.x, solid.y, solid.width, solid.height);
-        }
-
-        /** Draw particles */
-        this.particles.forEach(particle => {
-            particle.draw(ctx);
-        });
-
-        /** Draw enemies */
-        this.enemies.forEach(enemy => {
-            enemy.draw(ctx);
-        });
-
-        /** Draw player */
-        ctx.fillStyle = 'white';
-        this.playerState.draw(ctx, canvas, mousePosition, interpolationFactor);
+        this.ecs.draw(ctx);
     }
 
     update(mousePosition: Vector | undefined, keyboardState: Record<string, boolean>, frameDuration: number, onRoomChange: (x: number, y: number, doors: Partial<DoorsMap>) => void) {
-        if (!this.blockersLocked) {
-            if (this.solids.some(solid => solid.blocker && overlaps(this.playerState.actor, solid))) {
-                // Not yet
-            } else {
-                this.solids.forEach(solid => {
-                    if (solid.blocker) {
-                        solid.isCollidable = true;
-                    }
-                });
-                this.blockersLocked = true;
-            }
-        }
+        this.ecs.update({ mousePosition, keyboardState, frameDuration });
 
-        this.particles = this.particles.filter(particle => {
-            particle.update(frameDuration);
+        // if (!this.blockersLocked) {
+        //     if (this.solids.some(solid => solid.blocker && overlaps(this.playerState.actor, solid))) {
+        //         // Not yet
+        //     } else {
+        //         this.solids.forEach(solid => {
+        //             if (solid.blocker) {
+        //                 solid.isCollidable = true;
+        //             }
+        //         });
+        //         this.blockersLocked = true;
+        //     }
+        // }
 
-            return particle.alive;
-        });
+        // this.particles = this.particles.filter(particle => {
+        //     particle.update(frameDuration);
 
-        this.interactives.forEach(interactive => {
-            interactive.update(frameDuration, [this.playerState.actor], this.solids);
-        });
+        //     return particle.alive;
+        // });
 
-        this.enemies.forEach(enemy => {
-            enemy.update(frameDuration, this, this.playerState.actor.getMidpoint());
-        });
+        // this.enemies.forEach(enemy => {
+        //     enemy.update(frameDuration, this, this.playerState.actor.getMidpoint());
+        // });
 
-        this.playerState.update(mousePosition, keyboardState, frameDuration, this);
+        // this.enemies = this.enemies.filter(enemy => enemy.alive);
 
-        this.enemies = this.enemies.filter(enemy => enemy.alive);
+        // if (!this.allEnemiesCleared && this.enemies.length === 0) {
+        //     this.onAllEnemiesCleared();
+        //     this.allEnemiesCleared = true;
+        // }
 
-        if (!this.allEnemiesCleared && this.enemies.length === 0) {
-            this.onAllEnemiesCleared();
-            this.allEnemiesCleared = true;
-        }
-
-        this.validateLeavingRoom(onRoomChange);
+        // this.validateLeavingRoom(onRoomChange);
     }
 
     validateLeavingRoom(onRoomChange: (x: number, y: number, doors: Partial<DoorsMap>) => void) {
-        const playerMidpoint = this.playerState.actor.getMidpoint();
-        if (playerMidpoint.x > ROOM_SCALE_WIDTH) {
-            const doors: Pick<DoorsMap, 'left'> = { left: {} };
-            const relevantGap = (['high', 'medium', 'low'] as const)
-                .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
-            if (relevantGap) doors.left[relevantGap] = true;
-            onRoomChange(this.x + 1, this.y, doors);
-        } else if (playerMidpoint.x < 0) {
-            const doors: Pick<DoorsMap, 'right'> = { right: {} };
-            const relevantGap = (['high', 'medium', 'low'] as const)
-                .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
-            if (relevantGap) doors.right[relevantGap] = true;
-            onRoomChange(this.x - 1, this.y, doors);
-        } else if (playerMidpoint.y > ROOM_SCALE_HEIGHT) {
-            const doors: Pick<DoorsMap, 'top'> = { top: {} };
-            const relevantGap = (['left', 'center', 'right'] as const)
-                .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
-            if (relevantGap) doors.top[relevantGap] = true;
-            onRoomChange(this.x, this.y + 1, doors);
-        } else if (playerMidpoint.y < 0) {
-            const doors: Pick<DoorsMap, 'bottom'> = { bottom: {} };
-            const relevantGap = (['left', 'center', 'right'] as const)
-                .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
-            if (relevantGap) doors.bottom[relevantGap] = true;
-            onRoomChange(this.x, this.y - 1, doors);
-        }
+        // const playerMidpoint = this.playerState.actor.getMidpoint();
+        // if (playerMidpoint.x > ROOM_SCALE_WIDTH) {
+        //     const doors: Pick<DoorsMap, 'left'> = { left: {} };
+        //     const relevantGap = (['high', 'medium', 'low'] as const)
+        //         .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
+        //     if (relevantGap) doors.left[relevantGap] = true;
+        //     onRoomChange(this.x + 1, this.y, doors);
+        // } else if (playerMidpoint.x < 0) {
+        //     const doors: Pick<DoorsMap, 'right'> = { right: {} };
+        //     const relevantGap = (['high', 'medium', 'low'] as const)
+        //         .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
+        //     if (relevantGap) doors.right[relevantGap] = true;
+        //     onRoomChange(this.x - 1, this.y, doors);
+        // } else if (playerMidpoint.y > ROOM_SCALE_HEIGHT) {
+        //     const doors: Pick<DoorsMap, 'top'> = { top: {} };
+        //     const relevantGap = (['left', 'center', 'right'] as const)
+        //         .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
+        //     if (relevantGap) doors.top[relevantGap] = true;
+        //     onRoomChange(this.x, this.y + 1, doors);
+        // } else if (playerMidpoint.y < 0) {
+        //     const doors: Pick<DoorsMap, 'bottom'> = { bottom: {} };
+        //     const relevantGap = (['left', 'center', 'right'] as const)
+        //         .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
+        //     if (relevantGap) doors.bottom[relevantGap] = true;
+        //     onRoomChange(this.x, this.y - 1, doors);
+        // }
     }
 
     onAllEnemiesCleared() {
-        this.solids = this.solids.filter(solid => !solid.blocker);
+        // this.solids = this.solids.filter(solid => !solid.blocker);
     }
 
     setExternalMatchingDoorways(doors: Partial<SemiDoorsMap>) {
@@ -321,24 +303,24 @@ export class Room {
             }
         }
 
-        this.solids.push(...getDoorBlockingSolids(doorsToBlock).map(solid => {
-            solid.color = 'yellow';
-            return solid;
-        }));
+        // this.solids.push(...getDoorBlockingSolids(doorsToBlock).map(solid => {
+        //     solid.color = 'yellow';
+        //     return solid;
+        // }));
     }
 
     drawForMap(mapCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         mapCtx.fillStyle = this.color;
 
-        for (const solid of this.solids) {
-            if (solid.blocker) {
-                continue;
-            }
-            mapCtx.fillRect(solid.x, solid.y, solid.width, solid.height);
-        }
+        // for (const solid of this.solids) {
+        //     if (solid.blocker) {
+        //         continue;
+        //     }
+        //     mapCtx.fillRect(solid.x, solid.y, solid.width, solid.height);
+        // }
     }
 
     addParticle(particle: Particle) {
-        this.particles.push(particle);
+        // this.particles.push(particle);
     }
 }

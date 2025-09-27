@@ -13,7 +13,6 @@ function main() {
     const ctx = canvas.getContext('2d')!;
 
     if (!ctx) {
-        console.error('');
         throw Error('Could not set up canvas rendering context');
     }
 

@@ -1,11 +1,8 @@
 import { Solid } from '../../core/solid';
+import { isDefined } from '../../core/types';
 import { Walker } from '../enemy/walker';
 import { Room, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH } from '../room';
 import { generateRoomForDoors } from '../room-utils';
-
-function isDefined<T>(item: T | undefined): item is T {
-    return !!item;
-}
 
 export class TRoom extends Room {
     getDoorwayChance() {
