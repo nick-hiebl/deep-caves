@@ -94,10 +94,6 @@ export class Room {
 
     doors: DoorsMap;
 
-    // enemies: EnemyInterface[];
-    // solids: Solid[];
-    // particles: Particle[];
-
     ecs: ECS;
 
     roomCollider: Rect;
@@ -146,9 +142,6 @@ export class Room {
             top: setDoors.top ?? {},
             bottom: setDoors.bottom ?? {},
         };
-
-        // this.enemies = [];
-        // this.particles = [];
 
         this.globalDoorwayRectification();
         this.configureAllDoors();

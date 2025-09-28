@@ -89,7 +89,7 @@ export class PlayerSystem implements System {
                         randfloat(140, 240),
                     );
                 }
-                // Add particles
+
                 velocity.y = -JUMP_MAGNITUDE;
             }
 

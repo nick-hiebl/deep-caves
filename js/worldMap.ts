@@ -94,7 +94,7 @@ export class WorldMap {
             bottom: { ...(suggestedDoors.bottom ?? {}) },
         });
 
-        const CONSTRUCTORS = [GhostRoom, HRoom, LRoom, TRoom, PitRoom];
+        const CONSTRUCTORS: (typeof Room)[] = [GhostRoom, HRoom, LRoom, TRoom, PitRoom];
 
         const checkDoors = cloneDoors();
 

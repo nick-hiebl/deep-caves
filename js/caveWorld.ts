@@ -156,7 +156,7 @@ export class CaveWorld {
         const oldVel = oldPlayer.get(Velocity).velocity;
         const newVel = newPlayer.get(Velocity).velocity;
         newVel.x = oldVel.x;
-        // /** Cap player y velocity when falling room to room */
+        /** Cap player y velocity when falling room to room */
         newVel.y = Math.min(oldVel.y, 0.1);
 
         const worldX = oldActor.x + lastRoom.x * ROOM_SCALE_WIDTH;
@@ -165,7 +165,7 @@ export class CaveWorld {
         newActor.x = worldX - newRoom.x * ROOM_SCALE_WIDTH;
         newActor.y = worldY - newRoom.y * ROOM_SCALE_HEIGHT;
 
-        // /** If falling room to room cap their new y to 1px down */
+        /** If falling room to room cap their new y to 1px down */
         if (newRoom.y >= lastRoom.y + lastRoom.height) {
             newVel.y = Math.min(newVel.y, 1);
         } else if (newRoom.y + newRoom.height <= lastRoom.y) {

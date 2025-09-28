@@ -141,7 +141,7 @@ export class Actor implements Component {
                 if (!this.droppingSet.has(solid)) {
                     droppingThroughSolids.push(solid);
                 } else {
-                    // return true;
+
                 }
                 return false;
             }
