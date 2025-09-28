@@ -1,6 +1,8 @@
+import { Actor } from './core/actor';
 import { latch, type BooleanLatch } from './core/latch';
 import { isPointInside, type Vector } from './core/math';
 import { PlayerComponent, PlayerSystem } from './room/ecs/playerSystem';
+import { Velocity } from './room/ecs/solidSystem';
 import { ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, type DoorsMap, type Room } from './room/room';
 import { WorldMap } from './worldMap';
 
@@ -148,26 +150,29 @@ export class CaveWorld {
             return;
         }
 
-        const oldComp = oldPlayer.get(PlayerComponent);
-        const newComp = newPlayer.get(PlayerComponent);
-        // newComp.playerState.xVelocity = oldComp.playerState.xVelocity;
+        const oldActor = oldPlayer.get(Actor);
+        const newActor = newPlayer.get(Actor);
+
+        const oldVel = oldPlayer.get(Velocity).velocity;
+        const newVel = newPlayer.get(Velocity).velocity;
+        newVel.x = oldVel.x;
         // /** Cap player y velocity when falling room to room */
-        // newComp.playerState.yVelocity = Math.min(oldComp.playerState.yVelocity, 0.1);
+        newVel.y = Math.min(oldVel.y, 0.1);
 
-        // const worldX = oldComp.playerState.actor.x + lastRoom.x * ROOM_SCALE_WIDTH;
-        // const worldY = oldComp.playerState.actor.y + lastRoom.y * ROOM_SCALE_HEIGHT;
+        const worldX = oldActor.x + lastRoom.x * ROOM_SCALE_WIDTH;
+        const worldY = oldActor.y + lastRoom.y * ROOM_SCALE_HEIGHT;
 
-        // newComp.playerState.actor.x = worldX - newRoom.x * ROOM_SCALE_WIDTH;
-        // newComp.playerState.actor.y = worldY - newRoom.y * ROOM_SCALE_HEIGHT;
+        newActor.x = worldX - newRoom.x * ROOM_SCALE_WIDTH;
+        newActor.y = worldY - newRoom.y * ROOM_SCALE_HEIGHT;
 
         // /** If falling room to room cap their new y to 1px down */
-        // if (newRoom.y >= lastRoom.y + lastRoom.height) {
-        //     newComp.playerState.actor.y = Math.min(newComp.playerState.actor.y, 1);
-        // } else if (newRoom.y + newRoom.height <= lastRoom.y) {
-        //     newComp.playerState.yVelocity = Math.min(-1.1, newComp.playerState.yVelocity);
-        // }
+        if (newRoom.y >= lastRoom.y + lastRoom.height) {
+            newVel.y = Math.min(newVel.y, 1);
+        } else if (newRoom.y + newRoom.height <= lastRoom.y) {
+            newVel.y = Math.min(-1.1, newVel.y);
+        }
 
-        // newComp.playerState.facing = oldComp.playerState.facing;
+        newPlayer.get(PlayerComponent).facing = oldPlayer.get(PlayerComponent).facing;
     }
 
     simulateFrame(mousePosition: Vector | undefined, keyboardState: Record<string, boolean>) {

@@ -169,18 +169,56 @@ export class WorldMap {
             width: MAP_ROOM_WIDTH,
             height: MAP_ROOM_HEIGHT,
         }, -CURRENT_ROOM_BORDER);
+        const right = rect.x + rect.width,
+            bottom = rect.y + rect.height;
         ctx.fillRect(...rectToCtxArgs(produceRect({
             left: rect.x,
             width: CROSSHAIR_LENGTH,
             top: rect.y,
+            height: CURRENT_ROOM_BORDER,
+        })));
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            left: rect.x,
+            width: CURRENT_ROOM_BORDER,
+            top: rect.y,
             height: CROSSHAIR_LENGTH,
         })));
-        ctx.strokeRect(
-            -xOffset + (this.x - this.minX + 1 / 2) * MAP_ROOM_WIDTH - CURRENT_ROOM_BORDER,
-            y + this.y * MAP_ROOM_HEIGHT - CURRENT_ROOM_BORDER,
-            MAP_ROOM_WIDTH + CURRENT_ROOM_BORDER * 2,
-            MAP_ROOM_HEIGHT + CURRENT_ROOM_BORDER * 2,
-        );
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            right,
+            width: CROSSHAIR_LENGTH,
+            top: rect.y,
+            height: CURRENT_ROOM_BORDER,
+        })));
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            right,
+            width: CURRENT_ROOM_BORDER,
+            top: rect.y,
+            height: CROSSHAIR_LENGTH,
+        })));
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            left: rect.x,
+            width: CROSSHAIR_LENGTH,
+            bottom,
+            height: CURRENT_ROOM_BORDER,
+        })));
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            left: rect.x,
+            width: CURRENT_ROOM_BORDER,
+            bottom,
+            height: CROSSHAIR_LENGTH,
+        })));
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            right,
+            width: CROSSHAIR_LENGTH,
+            bottom,
+            height: CURRENT_ROOM_BORDER,
+        })));
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            right,
+            width: CURRENT_ROOM_BORDER,
+            bottom,
+            height: CROSSHAIR_LENGTH,
+        })));
     }
 
     index(x: number, y: number) {
