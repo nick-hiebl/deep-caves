@@ -19,13 +19,13 @@ export class Actor implements Component {
     isNonPhysical: boolean;
 
     constructor(x: number, y: number, width: number, height: number) {
-        this.x = x;
-        this.y = y;
+        this.x = Math.round(x);
+        this.y = Math.round(y);
         this.width = width;
         this.height = height;
 
-        this.xRemainder = 0;
-        this.yRemainder = 0;
+        this.xRemainder = x - this.x;
+        this.yRemainder = y - this.y;
 
         this.isDropping = false;
         this.droppingSet = new Set();

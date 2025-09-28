@@ -1,7 +1,7 @@
-const GRAVITY = 2.5 / 1000;
-const HIGH_GRAVITY = 6 / 1000;
+const GRAVITY = 2.1 / 1000;
+const HIGH_GRAVITY = 4.5 / 1000;
 
-const Y_VELOCITY_CUTOFF = -0.5;
+const Y_VELOCITY_CUTOFF = -0.2;
 
 /** Physics utils */
 const COYOTE_DURATION = 100;

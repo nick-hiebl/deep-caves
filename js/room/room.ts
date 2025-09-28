@@ -1,5 +1,5 @@
 import { Actor } from '../core/actor';
-import { isPointInside, rectMidpoint, type Rect, type Vector } from '../core/math';
+import { isPointInside, rectMidpoint, rectToCtxArgs, type Rect, type Vector } from '../core/math';
 import { Solid } from '../core/solid';
 import { ECS } from '../ecs/ecs';
 
@@ -10,6 +10,7 @@ import { createPlayer, PlayerSystem } from './ecs/playerSystem';
 import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
 import { ActorSystem, SolidSystem } from './ecs/solidSystem';
 import { generateRoomForDoors } from './room-utils';
+import type { RoomType } from './roomManager';
 
 export const WALL_THICKNESS = 15;
 
@@ -100,7 +101,15 @@ export class Room {
         direction: 'top' | 'bottom' | 'left' | 'right';
     }[];
 
-    constructor(x: number, y: number, width: number, height: number, color = 'blue', setDoors: Partial<DoorsMap> | undefined = {}) {
+    constructor(
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        color = 'blue',
+        setDoors: Partial<DoorsMap> | undefined = {},
+        roomType?: RoomType,
+    ) {
         /** Room setup */
         this.x = x;
         this.y = y;
@@ -142,9 +151,11 @@ export class Room {
 
         this.globalDoorwayRectification();
         this.configureAllDoors();
-        this.configureRoomContent();
+        this.configureRoomContent(roomType);
 
-        createPlayer(this.ecs, 0.5 * ROOM_SCALE_WIDTH, 0.08 * ROOM_SCALE_HEIGHT);
+        const playerStart = roomType?.playerStart ?? { x: 0.5 * ROOM_SCALE_WIDTH, y: 0.08 * ROOM_SCALE_HEIGHT };
+
+        createPlayer(this.ecs, playerStart.x, playerStart.y);
     }
 
     setupExits() {
@@ -260,7 +271,16 @@ export class Room {
     }
 
     /** Create room with outer boundary, a few ladders, enemies, and a moving platform */
-    configureRoomContent() {
+    configureRoomContent(roomType?: RoomType) {
+        if (roomType) {
+            roomType.blocks.forEach(rect => {
+                const e = this.ecs.addEntity();
+                const solid = new Solid(...rectToCtxArgs(rect));
+                this.ecs.addComponent(e, solid);
+                this.ecs.addComponent(e, new DrawableRect(solid));
+            });
+            return;
+        }
         /** Inner room setup */
         const { solids, blockers, ladders } = generateRoomForDoors(this.doors);
         solids.concat(blockers).concat(ladders).forEach(solid => {

@@ -5,13 +5,14 @@ import { LRoom } from './room/layouts/l_room';
 import { PitRoom } from './room/layouts/pit_room';
 import { TRoom } from './room/layouts/t_room';
 import { Room, type DoorsMap } from './room/room';
+import { roomManager, RoomType } from './room/roomManager';
 
 const MAP_ROOM_WIDTH = 128;
 const MAP_ROOM_HEIGHT = 72;
 const DEFAULT_MAP_WIDTH = 9;
 const DEFAULT_MAP_HEIGHT = 6;
 
-const MAP_ROOM_SCALE = 1 / 10;
+const MAP_ROOM_SCALE = 128 / 480;
 
 /** Amount to jump canvas size up by when re-drawing. */
 const INCREMENT_BY = 4;
@@ -41,7 +42,8 @@ export class WorldMap {
         this.minX = 0;
         this.minY = 0;
 
-        const room = new Room(0, 0, 1, 1);
+        const startRoom = roomManager.roomLayouts.find(r => r.name === 'Start_Room');
+        const room = new Room(0, 0, 1, 1, undefined, undefined, startRoom);
 
         this.map[this.index(0, 0)] = room;
 
@@ -84,7 +86,7 @@ export class WorldMap {
         };
     }
 
-    generateRoomChoices(x: number, y: number, suggestedDoors: Partial<DoorsMap> = {}) {
+    generateRoomChoices(x: number, y: number, suggestedDoors: Partial<DoorsMap> = {}): RoomType[] {
         const makeColor = () => `hsl(${randint(0, 360)}, 60%, 60%)`;
 
         const cloneDoors = () => ({
@@ -94,30 +96,26 @@ export class WorldMap {
             bottom: { ...(suggestedDoors.bottom ?? {}) },
         });
 
-        const CONSTRUCTORS: (typeof Room)[] = [GhostRoom, HRoom, LRoom, TRoom, PitRoom];
-
         const checkDoors = cloneDoors();
 
-        const acceptableConstructors = CONSTRUCTORS.filter(Class =>
-            Class.isValidAt(x, y) && Class.areDoorsOk(checkDoors),
-        );
+        const acceptableConstructors = roomManager.getValidWithDoors(checkDoors);
 
         /** TODO: Shuffle constructors */
 
         /** Pad with auto-generators */
-        acceptableConstructors.push(Room, Room, Room);
+        // acceptableConstructors.push(Room, Room, Room);
 
         const choices = [];
 
         for (let i = 0; i < 3; i++) {
-            const RoomType = acceptableConstructors.shift();
+            const roomType = acceptableConstructors.shift();
 
-            if (!RoomType) {
+            if (!roomType) {
                 throw new Error('Could not find enough rooms');
             }
 
             /** Must re-compute neighboring doors for each as otherwise each instance will be shared. */
-            choices.push(new RoomType(x, y, 1, 1, makeColor(), cloneDoors()));
+            choices.push(roomType);
         }
 
         return choices;

@@ -1,5 +1,6 @@
-import { CaveWorld } from "./caveWorld";
-import type { Vector } from "./core/math";
+import { CaveWorld } from './caveWorld';
+import type { Vector } from './core/math';
+import { gameFileFetch } from './room/roomManager';
 
 function main() {
     /** Page setup */
@@ -73,5 +74,8 @@ function main() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    main();
+    /** Ensure game file loads first */
+    gameFileFetch.then(() => {
+        main();
+    });
 });

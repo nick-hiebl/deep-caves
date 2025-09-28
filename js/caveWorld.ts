@@ -3,7 +3,8 @@ import { latch, type BooleanLatch } from './core/latch';
 import { isPointInside, type Vector } from './core/math';
 import { PlayerComponent, PlayerSystem } from './room/ecs/playerSystem';
 import { Velocity } from './room/ecs/solidSystem';
-import { ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, type DoorsMap, type Room } from './room/room';
+import { Room, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, type DoorsMap } from './room/room';
+import type { RoomType } from './room/roomManager';
 import { WorldMap } from './worldMap';
 
 const FRAME_DURATION = 10;
@@ -21,7 +22,7 @@ export class CaveWorld {
 
     pausedFor: 'Tab' | 'choices' | undefined;
     choosing: boolean;
-    choices: Room[];
+    choices: RoomType[];
 
     tabLatch: BooleanLatch;
     mouseOverChoiceIndex: number;
@@ -121,7 +122,8 @@ export class CaveWorld {
         const mousingOverValidOption = this.mouseOverChoiceIndex >= 0 && this.mouseOverChoiceIndex < this.choices.length;
 
         if (choosing && mousingOverValidOption) {
-            const newRoom = this.choices[this.mouseOverChoiceIndex]!;
+            const newRoomType = this.choices[this.mouseOverChoiceIndex]!;
+            const newRoom = new Room(this.worldMap.x, this.worldMap.y, newRoomType.width, newRoomType.height, undefined, undefined, newRoomType);
             this.worldMap.addRoom(newRoom);
 
             const lastRoom = this.worldMap.getPreviousRoom();
@@ -169,7 +171,7 @@ export class CaveWorld {
         if (newRoom.y >= lastRoom.y + lastRoom.height) {
             newVel.y = Math.min(newVel.y, 1);
         } else if (newRoom.y + newRoom.height <= lastRoom.y) {
-            newVel.y = Math.min(-1.1, newVel.y);
+            newVel.y = Math.min(-0.6, newVel.y);
         }
 
         newPlayer.get(PlayerComponent).facing = oldPlayer.get(PlayerComponent).facing;
