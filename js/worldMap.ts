@@ -1,4 +1,4 @@
-import { randint } from './core/math';
+import { insetRect, produceRect, randint, rectToCtxArgs } from './core/math';
 import { GhostRoom } from './room/layouts/ghost_room';
 import { HRoom } from './room/layouts/h_room';
 import { LRoom } from './room/layouts/l_room';
@@ -12,8 +12,6 @@ const DEFAULT_MAP_WIDTH = 9;
 const DEFAULT_MAP_HEIGHT = 6;
 
 const MAP_ROOM_SCALE = 1 / 10;
-
-const CURRENT_ROOM_BORDER = 2;
 
 /** Amount to jump canvas size up by when re-drawing. */
 const INCREMENT_BY = 4;
@@ -154,6 +152,9 @@ export class WorldMap {
     }
 
     drawMapToScreen(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
+        const CURRENT_ROOM_BORDER = 2;
+        const CROSSHAIR_LENGTH = 10;
+
         const drawWidth = Math.min(width, this.canvas.width);
         const drawHeight = Math.min(height, this.canvas.height);
 
@@ -161,8 +162,19 @@ export class WorldMap {
 
         ctx.drawImage(this.canvas, xOffset, 0, drawWidth, drawHeight, x, y, drawWidth, drawHeight);
 
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = CURRENT_ROOM_BORDER;
+        ctx.fillStyle = 'white';
+        const rect = insetRect({
+            x: -xOffset + (this.x - this.minX + 1 / 2) * MAP_ROOM_WIDTH,
+            y: y + this.y * MAP_ROOM_HEIGHT,
+            width: MAP_ROOM_WIDTH,
+            height: MAP_ROOM_HEIGHT,
+        }, -CURRENT_ROOM_BORDER);
+        ctx.fillRect(...rectToCtxArgs(produceRect({
+            left: rect.x,
+            width: CROSSHAIR_LENGTH,
+            top: rect.y,
+            height: CROSSHAIR_LENGTH,
+        })));
         ctx.strokeRect(
             -xOffset + (this.x - this.minX + 1 / 2) * MAP_ROOM_WIDTH - CURRENT_ROOM_BORDER,
             y + this.y * MAP_ROOM_HEIGHT - CURRENT_ROOM_BORDER,

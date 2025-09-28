@@ -1,11 +1,12 @@
-import { overlaps, type Vector } from '../core/math';
+import { Actor } from '../core/actor';
+import { isPointInside, overlaps, rectMidpoint, type Rect, type Vector } from '../core/math';
 import { Solid } from '../core/solid';
 import { ECS } from '../ecs/ecs';
 
 import { createEnemy, EnemyMovementSystem, EnemySystem } from './ecs/enemySystem';
 import { MovingPlatform, MovingPlatformSystem } from './ecs/movingPlatformSystem';
 import { ParticleSystem } from './ecs/particleSystem';
-import { createPlayer, PlayerSystem } from './ecs/playerSystem';
+import { createPlayer, PlayerComponent, PlayerSystem } from './ecs/playerSystem';
 import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
 import { ActorSystem, SolidSystem } from './ecs/solidSystem';
 import type { Particle } from './particle';
@@ -99,12 +100,29 @@ export class Room {
 
     ecs: ECS;
 
+    roomCollider: Rect;
+    exits: {
+        collider: Rect;
+        roomPos: Vector;
+        direction: 'top' | 'bottom' | 'left' | 'right';
+    }[];
+
     constructor(x: number, y: number, width: number, height: number, color = 'blue', setDoors: Partial<DoorsMap> | undefined = {}) {
         /** Room setup */
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+
+        this.roomCollider = {
+            x: 0,
+            y: 0,
+            width: width * ROOM_SCALE_WIDTH,
+            height: height * ROOM_SCALE_HEIGHT,
+        };
+
+        this.exits = [];
+        this.setupExits();
 
         this.ecs = new ECS();
 
@@ -137,6 +155,78 @@ export class Room {
         this.configureRoomContent();
 
         createPlayer(this.ecs, 0.5 * ROOM_SCALE_WIDTH, 0.08 * ROOM_SCALE_HEIGHT);
+    }
+
+    setupExits() {
+        const BUFFER = 100;
+
+        /** Top edge */
+        for (let xOff = 0; xOff < this.width; xOff++) {
+            this.exits.push({
+                collider: {
+                    x: xOff * ROOM_SCALE_WIDTH,
+                    y: -BUFFER,
+                    width: ROOM_SCALE_WIDTH,
+                    height: BUFFER,
+                },
+                roomPos: {
+                    x: this.x + xOff,
+                    y: this.y - 1,
+                },
+                direction: 'top',
+            });
+        }
+
+        /** Bottom edge */
+        for (let xOff = 0; xOff < this.width; xOff++) {
+            this.exits.push({
+                collider: {
+                    x: xOff * ROOM_SCALE_WIDTH,
+                    y: this.height * ROOM_SCALE_HEIGHT,
+                    width: ROOM_SCALE_WIDTH,
+                    height: BUFFER,
+                },
+                roomPos: {
+                    x: this.x + xOff,
+                    y: this.y + this.height,
+                },
+                direction: 'bottom',
+            });
+        }
+
+        /** Left edge */
+        for (let yOff = 0; yOff < this.height; yOff++) {
+            this.exits.push({
+                collider: {
+                    x: -BUFFER,
+                    y: yOff * ROOM_SCALE_HEIGHT,
+                    width: BUFFER,
+                    height: ROOM_SCALE_HEIGHT,
+                },
+                roomPos: {
+                    x: this.x - 1,
+                    y: this.y + yOff,
+                },
+                direction: 'left',
+            });
+        }
+
+        /** Right edge */
+        for (let yOff = 0; yOff < this.height; yOff++) {
+            this.exits.push({
+                collider: {
+                    x: this.width * ROOM_SCALE_WIDTH,
+                    y: yOff * ROOM_SCALE_HEIGHT,
+                    width: BUFFER,
+                    height: ROOM_SCALE_HEIGHT,
+                },
+                roomPos: {
+                    x: this.x + this.width,
+                    y: this.y + yOff,
+                },
+                direction: 'right',
+            });
+        }
     }
 
     globalDoorwayRectification() {
@@ -212,70 +302,47 @@ export class Room {
     update(mousePosition: Vector | undefined, keyboardState: Record<string, boolean>, frameDuration: number, onRoomChange: (x: number, y: number, doors: Partial<DoorsMap>) => void) {
         this.ecs.update({ mousePosition, keyboardState, frameDuration });
 
-        // if (!this.blockersLocked) {
-        //     if (this.solids.some(solid => solid.blocker && overlaps(this.playerState.actor, solid))) {
-        //         // Not yet
-        //     } else {
-        //         this.solids.forEach(solid => {
-        //             if (solid.blocker) {
-        //                 solid.isCollidable = true;
-        //             }
-        //         });
-        //         this.blockersLocked = true;
-        //     }
-        // }
-
-        // this.particles = this.particles.filter(particle => {
-        //     particle.update(frameDuration);
-
-        //     return particle.alive;
-        // });
-
-        // this.enemies.forEach(enemy => {
-        //     enemy.update(frameDuration, this, this.playerState.actor.getMidpoint());
-        // });
-
-        // this.enemies = this.enemies.filter(enemy => enemy.alive);
-
-        // if (!this.allEnemiesCleared && this.enemies.length === 0) {
-        //     this.onAllEnemiesCleared();
-        //     this.allEnemiesCleared = true;
-        // }
-
-        // this.validateLeavingRoom(onRoomChange);
+        this.validateLeavingRoom(onRoomChange);
     }
 
     validateLeavingRoom(onRoomChange: (x: number, y: number, doors: Partial<DoorsMap>) => void) {
-        // const playerMidpoint = this.playerState.actor.getMidpoint();
-        // if (playerMidpoint.x > ROOM_SCALE_WIDTH) {
-        //     const doors: Pick<DoorsMap, 'left'> = { left: {} };
-        //     const relevantGap = (['high', 'medium', 'low'] as const)
-        //         .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
-        //     if (relevantGap) doors.left[relevantGap] = true;
-        //     onRoomChange(this.x + 1, this.y, doors);
-        // } else if (playerMidpoint.x < 0) {
-        //     const doors: Pick<DoorsMap, 'right'> = { right: {} };
-        //     const relevantGap = (['high', 'medium', 'low'] as const)
-        //         .find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1]);
-        //     if (relevantGap) doors.right[relevantGap] = true;
-        //     onRoomChange(this.x - 1, this.y, doors);
-        // } else if (playerMidpoint.y > ROOM_SCALE_HEIGHT) {
-        //     const doors: Pick<DoorsMap, 'top'> = { top: {} };
-        //     const relevantGap = (['left', 'center', 'right'] as const)
-        //         .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
-        //     if (relevantGap) doors.top[relevantGap] = true;
-        //     onRoomChange(this.x, this.y + 1, doors);
-        // } else if (playerMidpoint.y < 0) {
-        //     const doors: Pick<DoorsMap, 'bottom'> = { bottom: {} };
-        //     const relevantGap = (['left', 'center', 'right'] as const)
-        //         .find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1]);
-        //     if (relevantGap) doors.bottom[relevantGap] = true;
-        //     onRoomChange(this.x, this.y - 1, doors);
-        // }
-    }
+        const players = Array.from(this.ecs.querySystem(PlayerSystem)?.values() ?? [])
+            .map(entityId => this.ecs.getComponents(entityId));
 
-    onAllEnemiesCleared() {
-        // this.solids = this.solids.filter(solid => !solid.blocker);
+        const player = players[0];
+
+        if (!player) {
+            throw new Error('No player found.');
+        }
+
+        const actor = player.get(Actor);
+        const playerMidpoint = rectMidpoint(actor);
+
+        /** Nothing to do */
+        if (isPointInside(this.roomCollider, playerMidpoint.x, playerMidpoint.y)) {
+            return;
+        }
+
+        const hitExit = this.exits.find(exit => isPointInside(exit.collider, playerMidpoint.x, playerMidpoint.y));
+
+        if (!hitExit) {
+            throw new Error('Player outside of room collider but has not hit any exit!');
+        }
+
+        const { direction, roomPos } = hitExit;
+
+        const doors: Partial<DoorsMap> = direction === 'top' || direction === 'bottom'
+            ? {
+                [direction === 'top' ? 'bottom' : 'top']: {
+                    [(['left', 'center', 'right'] as const).find(gap => playerMidpoint.x >= GAPS[gap][0] && playerMidpoint.x < GAPS[gap][1])!]: true,
+                },
+            } : {
+                [direction === 'left' ? 'right' : 'left']: {
+                    [(['low', 'medium', 'high'] as const).find(gap => playerMidpoint.y >= GAPS[gap][0] && playerMidpoint.y < GAPS[gap][1])!]: true,
+                },
+            };
+
+        onRoomChange(roomPos.x, roomPos.y, doors);
     }
 
     setExternalMatchingDoorways(doors: Partial<SemiDoorsMap>) {
@@ -316,15 +383,14 @@ export class Room {
     drawForMap(mapCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         mapCtx.fillStyle = this.color;
 
-        // for (const solid of this.solids) {
-        //     if (solid.blocker) {
-        //         continue;
-        //     }
-        //     mapCtx.fillRect(solid.x, solid.y, solid.width, solid.height);
-        // }
-    }
+        const solids = this.ecs.resolveEntities(this.ecs.querySystem(SolidSystem), Solid);
 
-    addParticle(particle: Particle) {
-        // this.particles.push(particle);
+        for (const solid of solids) {
+            if (solid.blocker) {
+                continue;
+            }
+
+            mapCtx.fillRect(solid.x, solid.y, solid.width, solid.height);
+        }
     }
 }

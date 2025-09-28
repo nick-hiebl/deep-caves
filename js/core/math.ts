@@ -115,3 +115,32 @@ export function randomPointInRect(rect: Rect): Vector {
         y: rect.y + randfloat(0, rect.height),
     };
 }
+
+type AllArgs = {
+    left?: number;
+    width?: number;
+    right?: number;
+    top?: number;
+    height?: number;
+    bottom?: number;
+}
+
+type XArgs = { left: number; width: number } | { left: number; right: number } | { right: number; width: number; left?: number };
+type YArgs = { top: number; height: number } | { top: number; bottom: number } | { bottom: number; height: number; top?: number };
+
+export function produceRect(args: XArgs & YArgs & AllArgs): Rect {
+    const x = args.left ?? args.right! - args.width!,
+        y = args.top ?? args.bottom! - args.height!,
+        width = args.width ?? args.right! - args.left!,
+        height = args.height ?? args.bottom! - args.top!;
+
+    if (isNaN(x) || isNaN(y) || isNaN(width) || isNaN(height)) {
+        throw new Error('Invalid parameters to create solid!');
+    }
+
+    return { x, y, width, height };
+}
+
+export function rectToCtxArgs({ x, y, width, height }: Rect): [number, number, number, number] {
+    return [x, y, width, height];
+}
