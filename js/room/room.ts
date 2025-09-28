@@ -1,15 +1,14 @@
 import { Actor } from '../core/actor';
-import { isPointInside, overlaps, rectMidpoint, type Rect, type Vector } from '../core/math';
+import { isPointInside, rectMidpoint, type Rect, type Vector } from '../core/math';
 import { Solid } from '../core/solid';
 import { ECS } from '../ecs/ecs';
 
-import { createEnemy, EnemyMovementSystem, EnemySystem } from './ecs/enemySystem';
+import { EnemyMovementSystem, EnemySystem } from './ecs/enemySystem';
 import { MovingPlatform, MovingPlatformSystem } from './ecs/movingPlatformSystem';
 import { ParticleSystem } from './ecs/particleSystem';
-import { createPlayer, PlayerComponent, PlayerSystem } from './ecs/playerSystem';
+import { createPlayer, PlayerSystem } from './ecs/playerSystem';
 import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
 import { ActorSystem, SolidSystem } from './ecs/solidSystem';
-import type { Particle } from './particle';
 import { generateRoomForDoors } from './room-utils';
 
 export const WALL_THICKNESS = 40;
