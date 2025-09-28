@@ -196,7 +196,10 @@ export class CaveWorld {
         const room = this.worldMap.getCurrentRoom();
 
         if (room) {
+            ctx.save();
+            ctx.scale(2, 2);
             room.draw(ctx, canvas, mousePosition, interpolationFactor);
+            ctx.restore();
         }
     }
 

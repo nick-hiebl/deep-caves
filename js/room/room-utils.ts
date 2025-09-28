@@ -1,12 +1,12 @@
 import { Solid, type SolidConfig } from '../core/solid';
 
-import { GAP_SIZE, GAPS, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, WALL_THICKNESS, type DoorsMap, type HorizontalDoorKey, type VerticalDoorKey } from './room';
+import { GAPS, ROOM_SCALE_HEIGHT, ROOM_SCALE_WIDTH, WALL_THICKNESS, type DoorsMap, type HorizontalDoorKey, type VerticalDoorKey } from './room';
 
 type SolidArgs =
     (({ x: number } | { left: number; x?: undefined }) & ({ width: number } | { right: number; width?: undefined })) &
     (({ y: number } | { top: number; y?: undefined }) & ({ height: number } | { bottom: number; height?: undefined }));
 
-export const createSolid = (args: SolidArgs, config?: SolidConfig) => {
+const createSolid = (args: SolidArgs, config?: SolidConfig) => {
     const x = args.x ?? args.left;
     const y = args.y ?? args.top;
     const width = args.width ?? args.right - x;
@@ -45,6 +45,8 @@ export const getDoorBlockingSolids = (doors: Partial<DoorsMap>) => {
 };
 
 export const generateRoomForDoors = (doors: DoorsMap) => {
+    const GAP_SIZE = WALL_THICKNESS * 3;
+
     const solids = [];
     const blockers = [];
 
@@ -101,16 +103,12 @@ export const generateRoomForDoors = (doors: DoorsMap) => {
 
     /** Add left ladder */
     ladders.push(createSolid(
-        { left: gapLeft - GAP_SIZE, width: GAP_SIZE, top: 420, height: WALL_THICKNESS / 4 },
-        { isDroppable: true },
-    ));
-    ladders.push(createSolid(
-        { left: gapLeft - GAP_SIZE, width: GAP_SIZE, top: 570, height: WALL_THICKNESS / 4 },
+        { left: gapLeft - GAP_SIZE, width: GAP_SIZE, top: 200, height: WALL_THICKNESS / 4 },
         { isDroppable: true },
     ));
     /** Add top platform */
     ladders.push(createSolid(
-        { left: gapLeft, right: gapRight, top: 140, height: WALL_THICKNESS / 4 },
+        { left: gapLeft, right: gapRight, top: 100, height: WALL_THICKNESS / 4 },
         { isDroppable: true },
     ));
 

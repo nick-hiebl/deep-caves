@@ -11,21 +11,19 @@ import { DrawableRect, RectArtSystem } from './ecs/rectArtSystem';
 import { ActorSystem, SolidSystem } from './ecs/solidSystem';
 import { generateRoomForDoors } from './room-utils';
 
-export const WALL_THICKNESS = 40;
+export const WALL_THICKNESS = 15;
 
-export const ROOM_SCALE_WIDTH = 1280;
-export const ROOM_SCALE_HEIGHT = 720;
-
-export const GAP_SIZE = WALL_THICKNESS * 6;
+export const ROOM_SCALE_WIDTH = 480;
+export const ROOM_SCALE_HEIGHT = 270;
 
 export const GAPS: Record<VerticalDoorKey | HorizontalDoorKey, [number, number]> = {
-    high: [120, 240],
-    medium: [ROOM_SCALE_HEIGHT / 2 - 40, ROOM_SCALE_HEIGHT / 2 + 80],
-    low: [ROOM_SCALE_HEIGHT - 160, ROOM_SCALE_HEIGHT - 40],
+    high: [40, 80],
+    medium: [ROOM_SCALE_HEIGHT / 2 - 20, ROOM_SCALE_HEIGHT / 2 + 20],
+    low: [ROOM_SCALE_HEIGHT - 80, ROOM_SCALE_HEIGHT - 40],
 
-    left: [80, 280],
-    center: [ROOM_SCALE_WIDTH / 2 - 100, ROOM_SCALE_WIDTH / 2 + 100],
-    right: [ROOM_SCALE_WIDTH - 280, ROOM_SCALE_WIDTH - 80],
+    left: [80, 180],
+    center: [ROOM_SCALE_WIDTH / 2 - 50, ROOM_SCALE_WIDTH / 2 + 50],
+    right: [ROOM_SCALE_WIDTH - 180, ROOM_SCALE_WIDTH - 80],
 };
 
 export type VerticalDoorKey = 'left' | 'center' | 'right';
@@ -272,10 +270,10 @@ export class Room {
         });
 
         const plat = this.ecs.addEntity();
-        const platSolid = new Solid(300, 280, 200, 40)
+        const platSolid = new Solid(220, 140, 100, 15)
         this.ecs.addComponent(plat, platSolid);
         this.ecs.addComponent(plat, new DrawableRect(platSolid, this.color));
-        this.ecs.addComponent(plat, new MovingPlatform(7000, { x: 300, y: 280 }, { x: 600, y: 280 }))
+        this.ecs.addComponent(plat, new MovingPlatform(7000, { x: 220, y: 140 }, { x: 300, y: 140 }))
 
         // createEnemy(this.ecs, ROOM_SCALE_WIDTH, ROOM_SCALE_HEIGHT);
         // this.enemies = [

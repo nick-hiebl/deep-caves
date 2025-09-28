@@ -19,13 +19,13 @@ const ATTACK_KEY = 'j';
 const SPRITE_WIDTH = 28;
 const SPRITE_HEIGHT = 36;
 
-const PLAYER_WIDTH = 56;
-const PLAYER_HEIGHT = 72;
+const PLAYER_WIDTH = 28;
+const PLAYER_HEIGHT = 36;
 
 /** Player speed per millisecond */
-const SPEED = 450 / 1000;
-const PLAYER_X_ACCEL = 2.5 / 1000;
-const JUMP_MAGNITUDE = 1;
+const SPEED = 250 / 1000;
+const PLAYER_X_ACCEL = 1.3 / 1000;
+const JUMP_MAGNITUDE = 0.7;
 
 const PLAYER_SPRITE = Sprite('./img/sword_man.png');
 
